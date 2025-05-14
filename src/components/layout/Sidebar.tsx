@@ -171,7 +171,7 @@ export function Sidebar() {
                 className={cn(
                   "flex items-center gap-3 rounded-md py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                   isCollapsed ? "justify-center px-2" : "px-3",
-                  isActive("/inventory/stock-movements") && "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                  (location.pathname === "/inventory/stock-movements") && "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
                 )}
                 title="Movimentações"
               >

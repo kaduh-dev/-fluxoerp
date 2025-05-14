@@ -98,9 +98,12 @@ const ClientsSuppliers = () => {
         </div>
 
         {isLoading ? (
-          <div className="flex items-center justify-center h-64">
-            <Loader2 className="h-8 w-8 animate-spin" />
-            <span className="ml-2">Carregando...</span>
+          <div className="flex flex-col items-center justify-center h-64 gap-4 border rounded-lg bg-muted/10 p-6">
+            <Loader2 className="h-10 w-10 animate-spin text-primary" />
+            <div className="text-center">
+              <h3 className="text-lg font-medium">Carregando dados</h3>
+              <p className="text-muted-foreground">Aguarde um momento enquanto buscamos as informações...</p>
+            </div>
           </div>
         ) : clientsSuppliers.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64 border rounded-lg bg-muted/10">
