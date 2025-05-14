@@ -204,8 +204,8 @@ const Dashboard = () => {
           });
         } else {
           // Exibimos apenas um aviso informativo
-          toast({
-            title: "Sistema iniciado com sucesso",
+          // Usando corretamente o toast, com title como argumento principal e description como opção
+          toast.info("Sistema iniciado com sucesso", {
             description: "Banco de dados vazio. Comece cadastrando seus primeiros dados."
           });
         }
