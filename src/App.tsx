@@ -54,6 +54,7 @@ const App = () => (
 
                 {/* Protected routes */}
                 <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+                <Route path="/index" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
                 <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
                 <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
                 <Route path="/inventory" element={<PrivateRoute><Products /></PrivateRoute>} />
@@ -67,6 +68,9 @@ const App = () => (
                 <Route path="/financial/cash-flow" element={<PrivateRoute><CashFlow /></PrivateRoute>} />
                 <Route path="/clients-suppliers" element={<PrivateRoute><ClientsSuppliers /></PrivateRoute>} />
 
+                {/* Special routes */}
+                <Route path="/unauthorized" element={<PrivateRoute><Unauthorized /></PrivateRoute>} />
+                
                 {/* Fallback route */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

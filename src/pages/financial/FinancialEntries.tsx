@@ -1,131 +1,65 @@
-
 import { useState } from 'react';
-import { Layout } from '@/components/layout/Layout';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow
-} from '@/components/ui/table';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu';
-import {
-  Card,
-  CardContent
-} from '@/components/ui/card';
-import {
-  ArrowDown,
-  ArrowUp,
-  Edit,
-  Filter,
-  MoreVertical,
-  Plus,
-  Search,
-  Trash2,
-} from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { FinancialEntry } from '@/types/financial';
+import { Layout } from "@/components/layout/Layout";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Filter, Plus, Download, Search } from "lucide-react";
 
 // Mock data for financial entries
-const financialEntriesMock: FinancialEntry[] = [
+const financialEntriesMock = [
   {
-    id: '1',
-    description: 'Pagamento de aluguel',
-    value: 2500,
-    due_date: '2023-05-10',
-    payment_date: '2023-05-09',
-    status: 'paid',
-    type: 'expense',
-    category: 'Aluguel',
-    tenant_id: '1',
-    created_at: '2023-04-01',
+    id: 1,
+    description: "Pagamento de fornecedor",
+    category: "Despesa",
+    amount: -1250.0,
+    date: "2023-05-15",
+    status: "Pago",
+    dueDate: "2023-05-15",
+    paymentMethod: "Transferência"
   },
   {
-    id: '2',
-    description: 'Venda de serviços',
-    value: 4500,
-    due_date: '2023-05-15',
-    payment_date: '2023-05-15',
-    status: 'paid',
-    type: 'income',
-    category: 'Serviços',
-    tenant_id: '1',
-    created_at: '2023-04-02',
+    id: 2,
+    description: "Venda de produtos",
+    category: "Receita",
+    amount: 3500.0,
+    date: "2023-05-16",
+    status: "Recebido",
+    dueDate: "2023-05-16",
+    paymentMethod: "Cartão de Crédito"
   },
   {
-    id: '3',
-    description: 'Conta de energia',
-    value: 450.75,
-    due_date: '2023-05-20',
-    status: 'pending',
-    type: 'expense',
-    category: 'Utilidades',
-    tenant_id: '1',
-    created_at: '2023-04-10',
+    id: 3,
+    description: "Aluguel do escritório",
+    category: "Despesa",
+    amount: -2000.0,
+    date: "2023-05-20",
+    status: "Pendente",
+    dueDate: "2023-05-20",
+    paymentMethod: "Boleto"
   },
   {
-    id: '4',
-    description: 'Manutenção de equipamentos',
-    value: 850,
-    due_date: '2023-05-22',
-    status: 'pending',
-    type: 'expense',
-    category: 'Manutenção',
-    tenant_id: '1',
-    created_at: '2023-04-15',
+    id: 4,
+    description: "Serviço de consultoria",
+    category: "Receita",
+    amount: 1800.0,
+    date: "2023-05-25",
+    status: "Pendente",
+    dueDate: "2023-05-30",
+    paymentMethod: "Transferência"
   },
   {
-    id: '5',
-    description: 'Venda de produtos',
-    value: 3200,
-    due_date: '2023-05-25',
-    status: 'pending',
-    type: 'income',
-    category: 'Vendas',
-    tenant_id: '1',
-    created_at: '2023-04-18',
-  },
+    id: 5,
+    description: "Pagamento de energia",
+    category: "Despesa",
+    amount: -450.0,
+    date: "2023-05-10",
+    status: "Pago",
+    dueDate: "2023-05-10",
+    paymentMethod: "Débito Automático"
+  }
 ];
-
-const getStatusBadge = (status: string) => {
-  switch (status) {
-    case 'pending':
-      return <Badge className="bg-amber-500">Pendente</Badge>;
-    case 'paid':
-      return <Badge className="bg-green-500">Pago</Badge>;
-    default:
-      return <Badge variant="outline">Desconhecido</Badge>;
-  }
-};
-
-const getTypeBadge = (type: string) => {
-  switch (type) {
-    case 'income':
-      return (
-        <div className="flex items-center">
-          <ArrowUp className="w-4 h-4 text-green-600 mr-1" />
-          <span className="text-green-600 font-medium">Receita</span>
-        </div>
-      );
-    case 'expense':
-      return (
-        <div className="flex items-center">
-          <ArrowDown className="w-4 h-4 text-red-600 mr-1" />
-          <span className="text-red-600 font-medium">Despesa</span>
-        </div>
-      );
-    default:
-      return <span>Desconhecido</span>;
-  }
-};
 
 const FinancialEntries = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -160,72 +94,68 @@ const FinancialEntries = () => {
           </div>
         </div>
 
-        <div className="flex justify-between items-center">
-          <div className="relative w-full max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Buscar por descrição, categoria..."
-              className="pl-10"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-        </div>
-
         <Card>
-          <CardContent className="p-0">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle>Lançamentos</CardTitle>
+              <div className="flex items-center gap-2">
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="search"
+                    placeholder="Buscar lançamentos..."
+                    className="pl-8 w-[250px]"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+                <Button variant="outline" size="sm">
+                  <Download className="mr-2 h-4 w-4" />
+                  Exportar
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Descrição</TableHead>
                   <TableHead>Categoria</TableHead>
-                  <TableHead>Tipo</TableHead>
-                  <TableHead className="text-right">Valor (R$)</TableHead>
+                  <TableHead>Data</TableHead>
                   <TableHead>Vencimento</TableHead>
+                  <TableHead>Valor</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Ações</TableHead>
+                  <TableHead>Método</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredEntries.map((entry) => (
                   <TableRow key={entry.id}>
-                    <TableCell className="font-medium">{entry.description}</TableCell>
+                    <TableCell>{entry.description}</TableCell>
                     <TableCell>{entry.category}</TableCell>
-                    <TableCell>{getTypeBadge(entry.type)}</TableCell>
-                    <TableCell className="text-right">
-                      {entry.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    <TableCell>{entry.date}</TableCell>
+                    <TableCell>{entry.dueDate}</TableCell>
+                    <TableCell className={entry.amount >= 0 ? "text-green-600" : "text-red-600"}>
+                      {entry.amount.toLocaleString('pt-BR', {
+                        style: 'currency',
+                        currency: 'BRL'
+                      })}
                     </TableCell>
-                    <TableCell>{entry.due_date}</TableCell>
-                    <TableCell>{getStatusBadge(entry.status)}</TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Abrir menu</span>
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem className="cursor-pointer">
-                            <Edit className="mr-2 h-4 w-4" />
-                            <span>Editar</span>
-                          </DropdownMenuItem>
-                          {entry.status === 'pending' && (
-                            <DropdownMenuItem className="cursor-pointer">
-                              <ArrowDown className="mr-2 h-4 w-4" />
-                              <span>Marcar como pago</span>
-                            </DropdownMenuItem>
-                          )}
-                          <DropdownMenuItem className="cursor-pointer text-destructive">
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            <span>Excluir</span>
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                    <TableCell>
+                      <Badge variant={
+                        entry.status === "Pago" || entry.status === "Recebido" 
+                          ? "success" 
+                          : entry.status === "Pendente" 
+                            ? "warning" 
+                            : "default"
+                      }>
+                        {entry.status}
+                      </Badge>
                     </TableCell>
+                    <TableCell>{entry.paymentMethod}</TableCell>
                   </TableRow>
                 ))}
-
                 {filteredEntries.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={7} className="h-24 text-center">
