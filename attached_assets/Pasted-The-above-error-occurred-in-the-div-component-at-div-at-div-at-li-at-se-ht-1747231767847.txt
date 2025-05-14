@@ -1,0 +1,23 @@
+The above error occurred in the <div> component:
+
+    at div
+    at div
+    at li
+    at se (https://a4d1ac46-d446-4ec9-a340-91b0d99db313-00-2zyddph6lm0bx.riker.replit.dev:5000/node_modules/.vite/deps/sonner.js?v=70862ae7:137:17)
+    at ol
+    at section
+    at Te (https://a4d1ac46-d446-4ec9-a340-91b0d99db313-00-2zyddph6lm0bx.riker.replit.dev:5000/node_modules/.vite/deps/sonner.js?v=70862ae7:230:17)
+    at Toaster (https://a4d1ac46-d446-4ec9-a340-91b0d99db313-00-2zyddph6lm0bx.riker.replit.dev:5000/src/components/ui/sonner.tsx:13:23)
+    at Provider (https://a4d1ac46-d446-4ec9-a340-91b0d99db313-00-2zyddph6lm0bx.riker.replit.dev:5000/node_modules/.vite/deps/chunk-XSD2Y4RK.js?v=70862ae7:38:15)
+    at TooltipProvider (https://a4d1ac46-d446-4ec9-a340-91b0d99db313-00-2zyddph6lm0bx.riker.replit.dev:5000/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=70862ae7:61:5)
+    at Router (https://a4d1ac46-d446-4ec9-a340-91b0d99db313-00-2zyddph6lm0bx.riker.replit.dev:5000/node_modules/.vite/deps/react-router-dom.js?v=70862ae7:4451:15)
+    at BrowserRouter (https://a4d1ac46-d446-4ec9-a340-91b0d99db313-00-2zyddph6lm0bx.riker.replit.dev:5000/node_modules/.vite/deps/react-router-dom.js?v=70862ae7:5196:5)
+    at TenantProvider (https://a4d1ac46-d446-4ec9-a340-91b0d99db313-00-2zyddph6lm0bx.riker.replit.dev:5000/src/contexts/TenantContext.tsx:15:34)
+    at QueryClientProvider (https://a4d1ac46-d446-4ec9-a340-91b0d99db313-00-2zyddph6lm0bx.riker.replit.dev:5000/node_modules/.vite/deps/@tanstack_react-query.js?v=70862ae7:2881:3)
+    at App
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+Objects are not valid as a React child (found: object with keys {title, description, variant}). If you meant to render a collection of children, use an array instead.
+Error fetching dashboard data: 
+Object {code: "42703", details: null, hint: null, message: "column financial_entries.amount does not exist"}
