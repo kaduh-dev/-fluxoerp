@@ -39,7 +39,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchDashboardData = async () => {
       if (!currentTenant?.id) return;
-      
+
       try {
         setIsDataLoading(true);
         // Fetch product count
@@ -47,46 +47,65 @@ const Dashboard = () => {
           .from('products')
           .select('*')
           .eq('tenant_id', currentTenant.id);
-        
+
         if (productsError) throw productsError;
-        
+
         // Count low stock products
         const lowStockProducts = products?.filter(p => p.quantity <= p.minStock) || [];
-        
+
         // Fetch financial data
+        const startOfMonth = new Date();
+        startOfMonth.setDate(1);
+        startOfMonth.setHours(0, 0, 0, 0);
+
+        const endOfMonth = new Date();
+        endOfMonth.setMonth(endOfMonth.getMonth() + 1);
+        endOfMonth.setDate(0);
+        endOfMonth.setHours(23, 59, 59, 999);
+
         const { data: financialData, error: financialError } = await supabase
           .from('financial_entries')
-          .select('amount, type')
+          .select('value, type')
           .eq('tenant_id', currentTenant.id)
-          .gte('created_at', new Date(new Date().setDate(1)).toISOString()); // Current month
-        
+          .gte('created_at', startOfMonth.toISOString())
+          .lte('created_at', endOfMonth.toISOString());
+
         if (financialError) throw financialError;
-        
-        // Calculate revenue (sum of income entries)
-        const totalRevenue = financialData
-          ?.filter(entry => entry.type === 'income')
-          .reduce((sum, entry) => sum + entry.amount, 0) || 0;
-        
+
+        let totalRevenue = 0;
+
+        if (financialData) {
+          const income = financialData
+            .filter(item => item.type === 'income')
+            .reduce((sum, item) => sum + (item.value || 0), 0);
+
+          const expenses = financialData
+            .filter(item => item.type === 'expense')
+            .reduce((sum, item) => sum + (item.value || 0), 0);
+
+          totalRevenue = income;
+        }
+
         // Fetch order count
         const { count: pendingOrders, error: ordersError } = await supabase
           .from('service_orders')
           .select('*', { count: 'exact', head: true })
           .eq('tenant_id', currentTenant.id)
           .eq('status', 'pending');
-        
+
         if (ordersError) throw ordersError;
-        
+
         // Fetch clients and suppliers
         const { data: clientsSuppliers, error: csError } = await supabase
           .from('clients_suppliers')
           .select('*')
           .eq('tenant_id', currentTenant.id);
-        
+
         if (csError) throw csError;
-        
+
         const clientCount = clientsSuppliers?.filter(cs => cs.type === 'client').length || 0;
         const supplierCount = clientsSuppliers?.filter(cs => cs.type === 'supplier').length || 0;
-        
+
         setDashboardData({
           productCount: products?.length || 0,
           lowStockCount: lowStockProducts.length,
@@ -104,7 +123,7 @@ const Dashboard = () => {
         setIsDataLoading(false);
       }
     };
-    
+
     if (currentTenant?.id && !isLoading) {
       fetchDashboardData();
     }
@@ -212,7 +231,7 @@ const Dashboard = () => {
             />
           ))}
         </div>
-        
+
         <div className="mt-8">
           <h3 className="text-xl font-semibold mb-4">Resumo do Negócio</h3>
           <div className="grid gap-6 md:grid-cols-2">
