@@ -97,10 +97,8 @@ const Dashboard = () => {
         });
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
-        toast({
-          title: "Erro ao carregar dados do dashboard",
-          description: "Verifique a conexão e tente novamente.",
-          variant: "destructive"
+        toast.error("Erro ao carregar dados do dashboard", {
+          description: "Verifique a conexão e tente novamente."
         });
       } finally {
         setIsDataLoading(false);
