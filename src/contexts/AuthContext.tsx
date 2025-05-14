@@ -180,9 +180,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       setUser(profile);
       setSession(session);
-      toast.success('Login realizado com sucesso!', {
-        description: `Bem-vindo(a) ${profile?.full_name || 'de volta'}!`
-      });
+      
+      // Configuramos uma flag para identificar login recente
+      sessionStorage.setItem('just_logged_in', 'true');
+      
       navigate('/dashboard');
     } catch (error: any) {
       console.error('Login failed:', error);

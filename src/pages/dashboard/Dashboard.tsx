@@ -90,10 +90,7 @@ const Dashboard = () => {
           end_date: endOfMonth.toISOString()
         });
 
-        // Simplificamos a verificação da tabela - assumindo que a estrutura está correta
-        // mas a tabela pode estar vazia (o que é normal para um sistema novo)
-        console.log('Verificando dados financeiros para o tenant:', currentTenant.id);
-
+        // Consultamos os dados financeiros de forma silenciosa
         const financialQuery = supabase
           .from('financial_entries')
           .select('value, type')
