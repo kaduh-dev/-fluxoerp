@@ -40,6 +40,26 @@ const Dashboard = () => {
     const fetchDashboardData = async () => {
       if (!currentTenant?.id) return;
 
+      // Verificar conexão com o Supabase
+      try {
+        const { error: pingError } = await supabase.from('products').select('id').limit(1);
+        if (pingError) {
+          console.error('Supabase connection error:', pingError);
+          toast.error("Erro de conexão com o banco de dados", {
+            description: "Verifique sua conexão de internet e tente novamente."
+          });
+          setIsDataLoading(false);
+          return;
+        }
+      } catch (pingError) {
+        console.error('Supabase ping failed:', pingError);
+        toast.error("Erro de conexão", {
+          description: "Não foi possível estabelecer conexão com o servidor."
+        });
+        setIsDataLoading(false);
+        return;
+      }
+
       try {
         setIsDataLoading(true);
         // Fetch product count
@@ -63,14 +83,27 @@ const Dashboard = () => {
         endOfMonth.setDate(0);
         endOfMonth.setHours(23, 59, 59, 999);
 
-        const { data: financialData, error: financialError } = await supabase
+        console.log('Fetching financial data with params:', {
+          tenant_id: currentTenant.id,
+          start_date: startOfMonth.toISOString(),
+          end_date: endOfMonth.toISOString()
+        });
+
+        const financialQuery = supabase
           .from('financial_entries')
           .select('value, type')
           .eq('tenant_id', currentTenant.id)
           .gte('created_at', startOfMonth.toISOString())
           .lte('created_at', endOfMonth.toISOString());
-
-        if (financialError) throw financialError;
+          
+        const { data: financialData, error: financialError } = await financialQuery;
+        
+        if (financialError) {
+          console.error('Financial data query error details:', financialError);
+          throw financialError;
+        }
+        
+        console.log('Financial data retrieved:', financialData?.length || 0, 'entries');
 
         let totalRevenue = 0;
 
@@ -116,8 +149,23 @@ const Dashboard = () => {
         });
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
+        
+        // Mensagem personalizada com base no tipo de erro
+        let errorDescription = "Verifique a conexão e tente novamente.";
+        
+        if (error instanceof Error) {
+          // Se for um erro com mensagem específica
+          errorDescription = error.message || errorDescription;
+          console.error('Error details:', error);
+        } else if (typeof error === 'object' && error !== null) {
+          // Para erros do Supabase ou outros objetos de erro
+          const errorObj = error as any;
+          errorDescription = errorObj.message || errorObj.details || errorObj.error || JSON.stringify(error);
+          console.error('Error details:', errorObj);
+        }
+        
         toast.error("Erro ao carregar dados do dashboard", {
-          description: "Verifique a conexão e tente novamente."
+          description: errorDescription
         });
       } finally {
         setIsDataLoading(false);
