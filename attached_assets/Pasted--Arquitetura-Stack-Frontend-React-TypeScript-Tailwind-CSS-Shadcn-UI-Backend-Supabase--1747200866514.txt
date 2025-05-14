@@ -1,0 +1,78 @@
+🏗️ Arquitetura & Stack
+Frontend: React + TypeScript + Tailwind CSS + Shadcn UI
+
+Backend: Supabase (PostgreSQL com RLS, triggers, funções e JWT custom claims)
+
+Gerenciamento de estado: React Context + React Query
+
+Autenticação: Supabase Auth com JWT custom claims (tenant_id, role)
+
+Banco de Dados: Supabase com suporte completo a multitenancy
+
+Deploy: Pronto para múltiplas instâncias com verificação de variáveis de ambiente, controle de sessões, e segurança reforçada.
+
+⚙️ Funcionalidades Principais
+📁 Multitenancy
+Cada empresa (tenant) possui seus próprios dados isolados
+
+RLS (Row Level Security) garante acesso seguro e segmentado por tenant
+
+👥 Gestão de Usuários e Permissões
+Cadastro e gerenciamento de usuários por tenant
+
+Sistema de permissões granular com base em roles e permissions
+
+Tela administrativa para configurar acessos
+
+📦 Controle de Estoque
+Cadastro de produtos
+
+Lançamentos de entrada e saída com gatilhos que atualizam o saldo em tempo real
+
+Histórico de movimentações por motivo
+
+🛠️ Ordens de Serviço (OS)
+Registro de OS com status (pending, in_progress, completed, cancelled)
+
+Associação de produtos usados na OS
+
+Histórico e edição de ordens com logs
+
+🧾 NF-e (futuramente)
+Integração planejada para emissão de nota fiscal eletrônica
+
+Armazenamento de XML e PDFs
+
+Validação de dados fiscais e CNPJ
+
+📉 Financeiro (em construção)
+Lançamentos de receitas e despesas
+
+Centro de custo
+
+Relatórios financeiros
+
+📊 Dashboards Visuais
+Gráficos e indicadores em tempo real (Recharts)
+
+Visão geral por tenant de status, movimentações e desempenho
+
+💡 Recursos de UX/UI
+✅ Navegação lateral com ícones
+
+🌗 Tema claro/escuro com persistência
+
+🧩 Feedback com toasts e modais elegantes
+
+📊 Dashboards responsivos com gráficos
+
+🧭 Navegação fluida com loading global e tratamento de sessão
+
+🧱 Segurança e Escalabilidade
+Autenticação robusta com Supabase Auth
+
+Claims personalizados nos JWT para role e tenant_id
+
+Proteção contra XSS, CSRF e falhas de autenticação
+
+Políticas RLS rigorosas por tenant

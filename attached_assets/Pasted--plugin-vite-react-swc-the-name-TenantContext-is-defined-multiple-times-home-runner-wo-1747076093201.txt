@@ -1,0 +1,234 @@
+[plugin:vite:react-swc] × the name `TenantContext` is defined multiple times
+    ╭─[/home/runner/workspace/src/contexts/TenantContext.tsx:19:1]
+ 16 │   user: User | null;
+ 17 │ }
+ 18 │ 
+ 19 │ const TenantContext = createContext<TenantContextType>({
+    ·       ──────┬──────
+    ·             ╰── previous definition of `TenantContext` here
+ 20 │   currentTenant: null,
+ 21 │   isLoading: true,
+ 22 │   user: null
+ 23 │ });
+ 24 │ 
+ 25 │ export function TenantProvider({ children }: { children: ReactNode }) {
+ 26 │   const [currentTenant, setCurrentTenant] = useState<Tenant | null>(null);
+ 27 │   const [isLoading, setIsLoading] = useState(true);
+ 28 │   const [user, setUser] = useState<User | null>(null);
+ 29 │ 
+ 30 │   useEffect(() => {
+ 31 │     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+ 32 │       setUser(session?.user || null);
+ 33 │       
+ 34 │       if (session?.user) {
+ 35 │         try {
+ 36 │           const { data: tenant, error } = await supabase
+ 37 │             .from('tenants')
+ 38 │             .select('*')
+ 39 │             .eq('user_id', session.user.id)
+ 40 │             .single();
+ 41 │ 
+ 42 │           if (error) throw error;
+ 43 │           setCurrentTenant(tenant);
+ 44 │         } catch (error) {
+ 45 │           console.error('Erro ao buscar tenant:', error);
+ 46 │           setCurrentTenant(null);
+ 47 │         }
+ 48 │       } else {
+ 49 │         setCurrentTenant(null);
+ 50 │       }
+ 51 │       setIsLoading(false);
+ 52 │     });
+ 53 │ 
+ 54 │     return () => {
+ 55 │       subscription.unsubscribe();
+ 56 │     };
+ 57 │   }, []);
+ 58 │ 
+ 59 │   return (
+ 60 │     <TenantContext.Provider value={{ currentTenant, isLoading, user }}>
+ 61 │       {children}
+ 62 │     </TenantContext.Provider>
+ 63 │   );
+ 64 │ }
+ 65 │ 
+ 66 │ export const useTenant = () => useContext(TenantContext);
+ 67 │ 
+ 68 │ interface TenantContextType {
+ 69 │   currentTenant: Tenant | null;
+ 70 │   isLoading: boolean;
+ 71 │   setCurrentTenant: (tenant: Tenant | null) => void;
+ 72 │ }
+ 73 │ 
+ 74 │ const TenantContext = createContext<TenantContextType | undefined>(undefined);
+    ·       ──────┬──────
+    ·             ╰── `TenantContext` redefined here
+ 75 │ 
+ 76 │ export const TenantProvider = ({ children }: { children: ReactNode }) => {
+ 77 │   const [currentTenant, setCurrentTenant] = useState<Tenant | null>(null);
+    ╰────
+  × the name `TenantProvider` is defined multiple times
+    ╭─[/home/runner/workspace/src/contexts/TenantContext.tsx:25:1]
+ 22 │   user: null
+ 23 │ });
+ 24 │ 
+ 25 │ export function TenantProvider({ children }: { children: ReactNode }) {
+    ·                 ───────┬──────
+    ·                        ╰── previous definition of `TenantProvider` here
+ 26 │   const [currentTenant, setCurrentTenant] = useState<Tenant | null>(null);
+ 27 │   const [isLoading, setIsLoading] = useState(true);
+ 28 │   const [user, setUser] = useState<User | null>(null);
+ 29 │ 
+ 30 │   useEffect(() => {
+ 31 │     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+ 32 │       setUser(session?.user || null);
+ 33 │       
+ 34 │       if (session?.user) {
+ 35 │         try {
+ 36 │           const { data: tenant, error } = await supabase
+ 37 │             .from('tenants')
+ 38 │             .select('*')
+ 39 │             .eq('user_id', session.user.id)
+ 40 │             .single();
+ 41 │ 
+ 42 │           if (error) throw error;
+ 43 │           setCurrentTenant(tenant);
+ 44 │         } catch (error) {
+ 45 │           console.error('Erro ao buscar tenant:', error);
+ 46 │           setCurrentTenant(null);
+ 47 │         }
+ 48 │       } else {
+ 49 │         setCurrentTenant(null);
+ 50 │       }
+ 51 │       setIsLoading(false);
+ 52 │     });
+ 53 │ 
+ 54 │     return () => {
+ 55 │       subscription.unsubscribe();
+ 56 │     };
+ 57 │   }, []);
+ 58 │ 
+ 59 │   return (
+ 60 │     <TenantContext.Provider value={{ currentTenant, isLoading, user }}>
+ 61 │       {children}
+ 62 │     </TenantContext.Provider>
+ 63 │   );
+ 64 │ }
+ 65 │ 
+ 66 │ export const useTenant = () => useContext(TenantContext);
+ 67 │ 
+ 68 │ interface TenantContextType {
+ 69 │   currentTenant: Tenant | null;
+ 70 │   isLoading: boolean;
+ 71 │   setCurrentTenant: (tenant: Tenant | null) => void;
+ 72 │ }
+ 73 │ 
+ 74 │ const TenantContext = createContext<TenantContextType | undefined>(undefined);
+ 75 │ 
+ 76 │ export const TenantProvider = ({ children }: { children: ReactNode }) => {
+    ·              ───────┬──────
+    ·                     ╰── `TenantProvider` redefined here
+ 77 │   const [currentTenant, setCurrentTenant] = useState<Tenant | null>(null);
+ 78 │   const [isLoading, setIsLoading] = useState(true);
+    ╰────
+  × the name `useTenant` is defined multiple times
+     ╭─[/home/runner/workspace/src/contexts/TenantContext.tsx:66:1]
+  63 │   );
+  64 │ }
+  65 │ 
+  66 │ export const useTenant = () => useContext(TenantContext);
+     ·              ────┬────
+     ·                  ╰── previous definition of `useTenant` here
+  67 │ 
+  68 │ interface TenantContextType {
+  69 │   currentTenant: Tenant | null;
+  70 │   isLoading: boolean;
+  71 │   setCurrentTenant: (tenant: Tenant | null) => void;
+  72 │ }
+  73 │ 
+  74 │ const TenantContext = createContext<TenantContextType | undefined>(undefined);
+  75 │ 
+  76 │ export const TenantProvider = ({ children }: { children: ReactNode }) => {
+  77 │   const [currentTenant, setCurrentTenant] = useState<Tenant | null>(null);
+  78 │   const [isLoading, setIsLoading] = useState(true);
+  79 │ 
+  80 │   useEffect(() => {
+  81 │     const initializeTenant = async () => {
+  82 │       try {
+  83 │         setIsLoading(true);
+  84 │         const { data: { session } } = await supabase.auth.getSession();
+  85 │       
+  86 │         if (session?.user) {
+  87 │           const { data: userData, error: userError } = await supabase
+  88 │             .from('users')
+  89 │             .select('*, tenants(*)')
+  90 │             .eq('id', session.user.id)
+  91 │             .maybeSingle();
+  92 │ 
+  93 │           if (userError) {
+  94 │             console.error('Erro ao buscar usuário:', userError);
+  95 │             setCurrentTenant(null);
+  96 │             return;
+  97 │           }
+  98 │ 
+  99 │           if (!userData) {
+ 100 │             console.log('Usuário não encontrado na tabela users');
+ 101 │             setCurrentTenant(null);
+ 102 │             return;
+ 103 │           }
+ 104 │ 
+ 105 │           if (!userData?.tenant_id || !userData.tenants) {
+ 106 │             setCurrentTenant(null);
+ 107 │             return;
+ 108 │           }
+ 109 │ 
+ 110 │           setCurrentTenant(userData.tenants);
+ 111 │           await supabase.rpc('set_tenant_id', { id: userData.tenant_id });
+ 112 │         }
+ 113 │       } catch (error: any) {
+ 114 │         console.error('Erro ao carregar tenant:', error);
+ 115 │         setCurrentTenant(null);
+ 116 │         toast.error('Erro ao carregar dados do tenant', {
+ 117 │           description: error.message
+ 118 │         });
+ 119 │       } finally {
+ 120 │         setIsLoading(false);
+ 121 │       }
+ 122 │     };
+ 123 │ 
+ 124 │     initializeTenant();
+ 125 │ 
+ 126 │     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event) => {
+ 127 │       if (event === 'SIGNED_OUT') {
+ 128 │         setCurrentTenant(null);
+ 129 │       }
+ 130 │     });
+ 131 │ 
+ 132 │     return () => {
+ 133 │       subscription.unsubscribe();
+ 134 │     };
+ 135 │   }, []);
+ 136 │ 
+ 137 │   return (
+ 138 │     <TenantContext.Provider value={{ currentTenant, isLoading, setCurrentTenant }}>
+ 139 │       {children}
+ 140 │     </TenantContext.Provider>
+ 141 │   );
+ 142 │ };
+ 143 │ 
+ 144 │ export const useTenant = () => {
+     ·              ────┬────
+     ·                  ╰── `useTenant` redefined here
+ 145 │   const context = useContext(TenantContext);
+ 146 │   if (!context) {
+ 147 │     throw new Error('useTenant must be used within TenantProvider');
+     ╰────
+/home/runner/workspace/src/contexts/TenantContext.tsx:19:1
+146|    if (!context) {
+147|      throw new Error('useTenant must be used within TenantProvider');
+148|    }
+   |    ^
+149|    return context;
+150|  };
+Click outside, press Esc key, or fix the code to dismiss.
+You can also disable this overlay by setting server.hmr.overlay to false in vite.config.ts.

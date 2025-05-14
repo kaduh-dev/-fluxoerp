@@ -1,0 +1,120 @@
+ plataforma SaaS (Software as a Service) projetada para oferecer uma solução robusta e escalável de gestão empresarial (ERP) voltada para micro, pequenas e médias empresas. Com suporte a múltiplos negócios (multitenancy), ele permite que diferentes organizações utilizem o sistema de forma isolada, segura e eficiente.
+
+🔧 Arquitetura Técnica
+Frontend:
+
+Framework: React com TypeScript
+
+Ferramentas: Vite, TailwindCSS, shadcn/ui
+
+Gerenciamento de estado: React Context API e React Query
+
+Formulários: React Hook Form
+
+Backend / Banco de Dados:
+
+Supabase (PostgreSQL + Auth + RLS + Storage + Functions)
+
+Multitenancy implementado via tenant_id em todas as tabelas
+
+Segurança garantida com Row Level Security (RLS) e JWT Claims personalizados
+
+🧩 Módulos e Funcionalidades
+🔐 Autenticação e Controle de Acesso
+Registro e login via Supabase Auth
+
+Atribuição automática de tenant_id e role no momento do login
+
+JWT Claims com informações do tenant e role
+
+Middleware de autenticação com redirecionamento e bloqueio de acesso
+
+Perfis com papéis (admin, user, etc.)
+
+👥 Gestão de Usuários e Permissões
+Visualização e edição de usuários do tenant
+
+Controle de permissões granulares por chave (key) e valor (value)
+
+Interface administrativa para atribuir ou revogar acessos
+
+Políticas RLS para garantir o isolamento entre tenants
+
+🏢 Gestão de Empresas (Tenants)
+Criação automática de tenant padrão no primeiro acesso
+
+Relação direta entre usuários, perfis e tenant
+
+Painel para gerenciar dados da empresa (nome, CNPJ, status etc.)
+
+📦 Gestão de Produtos e Estoque
+Cadastro de produtos com informações detalhadas
+
+Movimentações de estoque (entrada e saída) com justificativas
+
+Gatilho automático para atualizar o estoque via trigger no Supabase
+
+Histórico de movimentações por produto e por tenant
+
+🧾 Ordem de Serviço (OS)
+Cadastro de Ordens de Serviço com:
+
+Cliente
+
+Responsável
+
+Status (pendente, em progresso, concluída, cancelada)
+
+Descrição, data e valor total
+
+Itens da OS vinculados a produtos e preços unitários
+
+Atualização automática de estoque quando a OS for finalizada
+
+🛒 Requisições de Compra
+Criação de solicitações de compra por usuário
+
+Título, descrição e status da requisição (pendente, aprovada, recusada, etc.)
+
+Histórico de requisições por tenant
+
+🛡️ Segurança e Isolamento de Dados
+RLS (Row Level Security) em todas as tabelas sensíveis
+
+Políticas por tabela com base no auth.uid() e tenant_id
+
+Claims JWT personalizados fornecendo tenant_id e role no token
+
+Criação de funções no Supabase para garantir integridade nas inserções
+
+🧪 Qualidade e Robustez
+Tratamento de erros globais via contexto
+
+Feedbacks visuais para falhas de login, permissões, erros de formulário
+
+Timeout de requisições e validação de variáveis de ambiente
+
+Testes de integração e checklist para novos deployments
+
+🔄 Serviços Internos do Sistema
+📂 Supabase Storage (para upload de arquivos no futuro)
+
+📬 Emails transacionais (planejado, via Supabase ou Resend)
+
+📊 Dashboard por tenant (em planejamento para métricas e KPIs)
+
+📈 Escalabilidade
+Estrutura de dados preparada para atender múltiplas empresas em paralelo
+
+Possibilidade de versionamento do banco de dados
+
+Política de migrações e auditoria de alterações
+
+Infraestrutura 100% serverless e escalável com Supabase
+
+🎯 Objetivos do Sistema
+Reduzir a complexidade operacional de pequenas empresas
+
+Centralizar operações administrativas, de estoque, financeiro e serviços
+
+Ser acessível, intuitivo e seguro, com foco em usabilidade e produtividade

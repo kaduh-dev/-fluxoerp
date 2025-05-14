@@ -1,0 +1,58 @@
+[plugin:vite:react-swc] × the name `isLoading` is defined multiple times
+    ╭─[/home/runner/workspace/src/pages/clientsSuppliers/ClientsSuppliers.tsx:19:1]
+ 16 │   const [isFormOpen, setIsFormOpen] = useState(false);
+ 17 │   const [editingItem, setEditingItem] = useState<ClientSupplier | null>(null);
+ 18 │   const { toast } = useToast();
+ 19 │   const { currentTenant, isLoading } = useTenant();
+    ·                          ────┬────
+    ·                              ╰── previous definition of `isLoading` here
+ 20 │ 
+ 21 │   if (isLoading) {
+ 22 │     return (
+ 23 │       <Layout title="Clientes e Fornecedores">
+ 24 │         <div className="flex items-center justify-center h-96">
+ 25 │           <p className="text-lg">Carregando informações...</p>
+ 26 │         </div>
+ 27 │       </Layout>
+ 28 │     );
+ 29 │   }
+ 30 │ 
+ 31 │   if (!currentTenant) {
+ 32 │     return (
+ 33 │       <Layout title="Clientes e Fornecedores">
+ 34 │         <div className="flex items-center justify-center h-96">
+ 35 │           <p className="text-lg text-red-500">Por favor, faça login novamente para acessar esta página.</p>
+ 36 │         </div>
+ 37 │       </Layout>
+ 38 │     );
+ 39 │   }
+ 40 │ 
+ 41 │   const fetchClientsSuppliers = async () => {
+ 42 │     if (!currentTenant) return [];
+ 43 │ 
+ 44 │     const { data, error } = await supabase
+ 45 │       .from('clients_suppliers')
+ 46 │       .select('*')
+ 47 │       .order('name', { ascending: true });
+ 48 │ 
+ 49 │     if (error) {
+ 50 │       console.error('Error fetching clients/suppliers:', error);
+ 51 │       toast({
+ 52 │         title: 'Erro ao carregar clientes/fornecedores',
+ 53 │         description: error.message,
+ 54 │         variant: 'destructive',
+ 55 │       });
+ 56 │       return [];
+ 57 │     }
+ 58 │ 
+ 59 │     return data as ClientSupplier[];
+ 60 │   };
+ 61 │ 
+ 62 │   const {
+ 63 │     data: clientsSuppliers = [],
+ 64 │     isLoading,
+    ·     ────┬────
+    ·         ╰── `isLoading` redefined here
+ 65 │     refetch,
+ 66 │   } = useQuery({
+ 67 │     queryKey: ['clientsSuppliers', currentTenant?.id],

@@ -1,0 +1,62 @@
+Objetivo: Refatorar e aprimorar o sistema de autenticação e controle de acesso do meu app SaaS usando Supabase com React, TypeScript e Context API.
+
+Cenário atual:
+
+Já tenho um AuthContext funcional com login e logout.
+
+Já uso Supabase e tenho a tabela profiles com id, role e full_name.
+
+Quero agora adicionar: controle de roles, manipulação de perfis, proteção de rotas e melhorias nas funções existentes.
+
+🚧 Modificações e implementações necessárias
+🔐 Funções de Autenticação
+ login(email, password): Validar credenciais e retornar erro amigável em caso de falha.
+
+ logout(): Encerrar sessão e limpar estado/contexto.
+
+ register({ email, password, full_name }): Criar conta, inserir no profiles e validar os dados.
+
+ resetPassword(email): Enviar link de recuperação de senha.
+
+ updateProfile(profileData): Atualizar nome e outros campos do usuário logado.
+
+🛂 Funções de Controle de Acesso
+ hasRole(role: string): Verifica se o usuário atual possui o role esperado.
+
+ checkPermission(permission: string): Função extra para permissões mais específicas no futuro.
+
+ updateRole(userId: string, role: string): Permitir que administradores mudem o role de outro usuário.
+
+👤 Funções de Gestão de Perfil
+ createProfile(id: UUID, full_name: string, role: string): Executada após registro.
+
+ updateProfile(profileData): Atualiza campos do perfil.
+
+ deleteProfile(userId): (Admin) Remove perfil de usuário.
+
+🔁 Funções de Sessão
+ refreshSession(): Revalida ou renova a sessão do Supabase.
+
+ validateSession(): Verifica se a sessão ainda é válida (usado em useEffect inicial).
+
+ clearSession(): Garantir limpeza total de estado após logout.
+
+❌ Funções de Tratamento de Erros
+ handleAuthError(error: SupabaseError): Exibir erros amigáveis de login/registro.
+
+ handleValidationError(errors: ValidationError[]): Feedback visual na interface.
+
+🚀 Funções de Navegação
+ redirectAfterLogin(): Após login, redirecionar baseado na role (admin vai para /admin, cliente para /dashboard).
+
+ redirectAfterLogout(): Levar o usuário para a página de login ou pública.
+
+🧩 Dependências e Considerações
+Todas essas funções devem respeitar o contexto de multitenancy e role-based access.
+
+A sessão do Supabase já é persistente, mas pode ser revalidada com supabase.auth.getSession().
+
+A profiles está conectada ao auth.users (foreign key) e já tem RLS ativada.
+
+🧠 Sua tarefa: Com base nesses requisitos, atualize meu AuthContext.tsx, e implemente os arquivos e funções listados acima, de forma limpa, modular e segura.
+

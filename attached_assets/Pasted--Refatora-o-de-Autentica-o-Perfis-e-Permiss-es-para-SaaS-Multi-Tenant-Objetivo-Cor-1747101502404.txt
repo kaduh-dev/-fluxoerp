@@ -1,0 +1,104 @@
+# ✅ Refatoração de Autenticação, Perfis e Permissões para SaaS Multi-Tenant
+
+## 🎯 Objetivo
+
+Corrigir erros relacionados à criação de perfis e autenticação, permitir que usuários configurem seus perfis via uma nova página, estabelecer um sistema de permissões baseado em cargos (roles), e garantir que o administrador mantenha acesso total mesmo sem uma UI administrativa.
+
+---
+
+## 🛠️ 1. Correção de Bugs Críticos
+
+### 🔧 Bug: `new row violates row-level security policy for table "profiles"`
+
+**Causa:** Tentativa de inserir perfil sem que o Supabase saiba o `tenant_id`.
+
+**Solução:**
+- Garantir que a função `set_tenant_id(uuid)` esteja correta e seja usada antes de qualquer inserção.
+- Ajustar políticas RLS da tabela `profiles` para permitir inserções se o `auth.uid()` for igual ao `user_id` e o `tenant_id` for coerente com a claim do token.
+
+### 🔧 Bug: `operator does not exist: uuid = text`
+
+**Causa:** Comparação entre tipos incompatíveis (UUID e TEXT).
+
+**Solução:** Adicionar cast explícito em queries SQL:
+```sql
+WHERE user_id = auth.uid()::uuid
+👤 2. Página de Configuração de Perfil (/profile)
+✨ Requisitos da Página:
+Permite que o usuário edite: nome completo, foto (opcional), email (somente leitura).
+
+Seleção de cargo: admin, gestor, financeiro
+
+⚠️ Se for admin, uma caixa de seleção adicional deve estar visível:
+
+“Manter acesso administrativo temporário (modo desenvolvedor)”
+
+Opção de salvar mudanças com feedback visual (loading, sucesso, erro).
+
+🧠 Detalhes Técnicos:
+Carregar perfil ao montar a página via useEffect.
+
+Utilizar Supabase update() na tabela profiles.
+
+Validar permissões no back-end (RLS): somente o próprio usuário pode editar o próprio perfil.
+
+Adicionar a role ao JWT como claim para uso em RLS e frontend.
+
+🔐 3. Sistema de Permissões por Cargo
+📌 Cargos e Acessos
+Cargo	Acesso
+Admin	Acesso total a todas as funcionalidades e gestão de usuários
+Gestor	Pode acessar dashboard, inventário, clientes/fornecedores e ordens
+Financeiro	Pode acessar relatórios financeiros, contas a pagar/receber
+
+💡 Implementação Técnica:
+Adicionar role no perfil do usuário (tabela profiles.role).
+
+Incluir role como claim no JWT via função Postgres ou trigger.
+
+Usar middleware (React ou backend) para restringir acesso com base na role.
+
+🧪 4. Melhoria no Desempenho e UX
+✅ Boas práticas inspiradas em SaaS populares:
+Feedback imediato: spinners, skeleton loaders, toast de erro/sucesso.
+
+Lazy loading: carregar dados sob demanda com React Query ou SWR.
+
+Modo offline: cache local dos dados com fallback.
+
+Auditoria básica: registrar alterações de perfis ou permissões em tabela logs.
+
+Página 404 e acesso negado: tratamento amigável e seguro para rotas não permitidas.
+
+🧱 5. Checklist de Alterações Técnicas
+Backend (Supabase):
+ Adicionar coluna role em profiles
+
+ Ajustar RLS para aceitar inserções/updates do próprio usuário
+
+ Garantir uso da função set_tenant_id com tipo correto
+
+ Criar trigger para incluir role no JWT se necessário
+
+Frontend (React):
+ Criar página /profile com formulário
+
+ Carregar e atualizar perfil usando Supabase
+
+ Mostrar opção para manter acesso administrativo
+
+ Implementar proteção por role em rotas
+
+ Mostrar mensagem apropriada para usuários sem permissão
+
+📈 Futuras Expansões
+✅ Página de administração completa (gestão de usuários, cargos, tenants)
+
+🔒 Auditoria de ações e permissões refinadas (por módulo)
+
+📊 Dashboard analítico com métricas por cargo
+
+🌍 Suporte multilíngue e internacionalização (i18n)
+
+🚀 Pronto para Implementar?
+Com essas alterações, seu sistema estará mais seguro, escalável, e preparado para um uso profissional no modelo SaaS.

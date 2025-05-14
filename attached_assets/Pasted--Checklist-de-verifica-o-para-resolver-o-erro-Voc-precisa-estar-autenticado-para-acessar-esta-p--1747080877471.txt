@@ -1,0 +1,85 @@
+✅ Checklist de verificação para resolver o erro "Você precisa estar autenticado para acessar esta página":
+🔒 1. AuthContext está sendo carregado corretamente?
+O AuthProvider está envolvendo o Router no App.tsx?
+
+tsx
+Copiar
+Editar
+<AuthProvider>
+  <BrowserRouter>
+    <AppRoutes />
+  </BrowserRouter>
+</AuthProvider>
+🔁 2. Verificação de sessão está sendo feita corretamente no AuthContext?
+Está usando supabase.auth.getSession() ou onAuthStateChange() para manter a sessão sincronizada?
+
+Está armazenando o user no estado e atualizando corretamente?
+
+🧠 3. Você está usando PrivateRoute corretamente?
+O componente Dashboard está dentro de um <PrivateRoute> como este:
+
+tsx
+Copiar
+Editar
+<PrivateRoute allowedRoles={['admin', 'user']}>
+  <Dashboard />
+</PrivateRoute>
+🚪 4. A role está sendo carregada corretamente após o login?
+A role do usuário está sendo buscada da tabela profiles e atribuída no AuthContext?
+
+Certifique-se de que você está fazendo algo assim:
+
+ts
+Copiar
+Editar
+const { data: profile } = await supabase
+  .from('profiles')
+  .select('role')
+  .eq('id', user.id)
+  .single();
+🧹 5. Não está ocorrendo refresh indesejado da página após login?
+O login deve redirecionar com navigate('/dashboard'), sem reload.
+
+🛠 Solução imediata sugerida:
+No seu AuthContext, certifique-se que você tenha algo parecido com isso:
+
+tsx
+Copiar
+Editar
+useEffect(() => {
+  const initAuth = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    setSession(session);
+    setUser(session?.user || null);
+
+    if (session?.user) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', session.user.id)
+        .single();
+      setRole(profile?.role || null);
+    }
+  };
+
+  initAuth();
+
+  const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+    setSession(session);
+    setUser(session?.user || null);
+  });
+
+  return () => {
+    listener.subscription.unsubscribe();
+  };
+}, []);
+E no PrivateRoute, valide assim:
+
+tsx
+Copiar
+Editar
+if (isLoading) return <LoadingSpinner />;
+if (!user) return <Navigate to="/login" />;
+if (allowedRoles && !allowedRoles.includes(role)) {
+  return <Navigate to="/unauthorized" />;
+}

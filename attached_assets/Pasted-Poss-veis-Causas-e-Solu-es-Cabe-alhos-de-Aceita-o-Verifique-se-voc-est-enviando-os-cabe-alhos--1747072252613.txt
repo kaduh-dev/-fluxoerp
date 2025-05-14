@@ -1,0 +1,100 @@
+Possíveis Causas e Soluções
+Cabeçalhos de Aceitação: Verifique se você está enviando os cabeçalhos de aceitação corretos na sua solicitação. O Supabase geralmente retorna dados em formato JSON, então você deve garantir que o cabeçalho Accept esteja definido como application/json.
+
+Exemplo de como definir o cabeçalho de aceitação em uma solicitação fetch:
+
+const
+ response = 
+await
+ fetch(
+'https://avbrkbnenbtjeldudymz.supabase.co/rest/v1/users?select=tenant_id,tenants(*)&id=eq.547f16ae-7841-439a-823d-e3d41bacb44b'
+, {
+    
+method
+: 
+'GET'
+,
+    
+headers
+: {
+        
+'Authorization'
+: 
+`Bearer 
+${your_access_token}
+`
+,
+        
+'Accept'
+: 
+'application/json'
+,
+    },
+});
+
+Verifique a Estrutura da Consulta: Certifique-se de que a consulta está correta e que os campos que você está tentando selecionar existem na tabela. A consulta que você forneceu parece estar tentando selecionar tenant_id e uma relação chamada tenants. Verifique se a relação tenants está corretamente configurada no banco de dados.
+
+Verifique as Políticas de RLS: Se você estiver usando Row Level Security (RLS), verifique se as políticas estão configuradas corretamente para permitir que o usuário que está fazendo a solicitação acesse os dados. Se as políticas não permitirem o acesso, você pode receber erros ao tentar consultar os dados.
+
+Teste a Consulta Diretamente no Supabase: Tente executar a mesma consulta diretamente no painel do Supabase (na seção SQL) para ver se ela retorna os resultados esperados. Isso pode ajudar a identificar se o problema está na consulta ou na forma como ela está sendo chamada no seu código.
+
+Exemplo de Consulta
+Aqui está um exemplo de como você pode fazer a solicitação usando o cliente Supabase:
+
+import
+ { supabase } 
+from
+ 
+"@/integrations/supabase/client"
+;
+const
+ fetchUserData = 
+async
+ (userId) => {
+    
+const
+ { data, error } = 
+await
+ supabase
+        .from(
+'users'
+)
+        .select(
+'tenant_id, tenants(*)'
+)
+        .eq(
+'id'
+, userId);
+    
+if
+ (error) {
+        
+console
+.error(
+"Erro ao buscar dados do usuário:"
+, error.message);
+        
+return
+ 
+null
+;
+    }
+    
+return
+ data;
+};
+// Chame a função com o ID do usuário
+
+const
+ userId = 
+'547f16ae-7841-439a-823d-e3d41bacb44b'
+;
+const
+ userData = 
+await
+ fetchUserData(userId);
+console
+.log(userData);
+
+Conclusão
+Verifique os cabeçalhos de aceitação, a estrutura da consulta e as políticas de RLS. Se o problema persistir, teste a consulta diretamente no painel do Supabase para identificar a causa do erro.

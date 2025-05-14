@@ -1,0 +1,56 @@
+## Objetivo
+
+Quero que você crie um sistema de login completo e funcional para meu projeto React + Supabase com multitenancy.
+
+## Requisitos
+
+- Framework: React com TypeScript
+- Backend: Supabase com autenticação de e-mail e senha
+- Banco: Já tenho uma tabela `tenants` com `id`, `name` e `user_id`
+- Session: Cada usuário só pode acessar os dados do seu `tenant`
+- Biblioteca de rotas: `react-router-dom`
+- Contexto de autenticação já usa `supabase.auth.getUser()` e `supabase.auth.onAuthStateChange()`
+- Após o login, deve redirecionar para `/dashboard` e exibir dados apenas do tenant vinculado ao usuário logado
+
+## Funcionalidades
+
+1. **Página de login (`/login`)**
+   - Formulário com campos: e-mail e senha
+   - Botão "Entrar"
+   - Ao logar com sucesso, deve redirecionar para `/dashboard`
+
+2. **Redirecionamento automático**
+   - Quando o app inicia e o usuário **não está logado**, redireciona automaticamente para `/login`
+   - Se estiver logado, redireciona para `/dashboard`
+
+3. **Página de dashboard (`/dashboard`)**
+   - Apenas usuários autenticados podem acessar
+   - Mostra dados do tenant específico baseado no `user_metadata.tenant_id` ou na relação entre `user.id` e `tenants.user_id`
+   - Usa `set_tenant_id(uuid)` para configurar a sessão no Supabase antes de buscar dados
+
+4. **Controle de sessão**
+   - Deve usar o contexto React para armazenar o usuário atual e o tenant
+   - Rota `/` redireciona para `/login` ou `/dashboard` conforme o estado de login
+
+5. **Isolamento multitenant**
+   - Cada usuário só pode acessar seu próprio tenant
+   - O `app.tenant_id` deve ser configurado via função RPC do Supabase no login
+
+## Extras (opcional, se possível)
+
+- Mostrar mensagem de erro se e-mail/senha estiverem incorretos
+- Loader durante verificação de login e carregamento do tenant
+- Exibir nome do tenant logado no dashboard
+
+## Observações
+
+- A função RPC `set_tenant_id(id uuid)` já está criada no Supabase
+- Já existem políticas RLS ativadas nas tabelas (usando `current_setting('app.tenant_id')`)
+- Os dados devem ser carregados **apenas depois** de configurar o `tenant_id`
+
+## Resultado Esperado
+
+- Página `/login` carrega automaticamente ao abrir a aplicação
+- Após autenticar, redireciona para `/dashboard`
+- Cada usuário vê apenas seus dados
+- Se não estiver logado, não acessa nenhuma rota protegida

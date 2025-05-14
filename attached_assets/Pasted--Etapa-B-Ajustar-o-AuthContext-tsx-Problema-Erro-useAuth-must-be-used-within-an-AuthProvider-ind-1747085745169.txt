@@ -1,0 +1,78 @@
+ Etapa B: Ajustar o AuthContext.tsx
+Problema:
+Erro "useAuth must be used within an AuthProvider" indica que AuthProvider não está corretamente aplicado.
+
+Solução:
+No main.tsx (ou App.tsx), envolva sua aplicação corretamente:
+
+tsx
+Copiar
+Editar
+import { AuthProvider } from "@/contexts/AuthContext";
+
+<React.StrictMode>
+  <AuthProvider>
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+  </AuthProvider>
+</React.StrictMode>
+Além disso, valide que o estado do AuthContext possui carregamento (loading) antes de renderizar as rotas:
+
+tsx
+Copiar
+Editar
+if (loading) return <LoadingScreen />; // spinner ou skeleton
+✅ Etapa C: Melhorar Verificação no Dashboard
+Arquivo: src/pages/dashboard/Dashboard.tsx
+Adicione proteção com base em autenticação e carregamento:
+
+tsx
+Copiar
+Editar
+import { useAuth } from "@/contexts/AuthContext";
+
+export default function Dashboard() {
+  const { user, loading, profile } = useAuth();
+
+  if (loading) return <LoadingScreen />;
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return (
+    <div>
+      <h1>Bem-vindo, {profile?.full_name ?? "Usuário"}</h1>
+    </div>
+  );
+}
+🧠 Melhorias Recomendadas (prioridade por impacto)
+🛠️ Infraestrutura e Segurança
+ Interceptar requisições Supabase: centralize chamadas com wrapper para logging e tratamento.
+
+ Refresh token automático: Supabase já faz isso, mas monitore com onAuthStateChange + fallback.
+
+ Validação de tenant: em todas as from('...'), use eq('tenant_id', currentTenantId).
+
+🧩 Experiência do Usuário
+ Loading states globais: use context ou React Query isLoading.
+
+ Feedback visual (toast, skeletons): com sonner, shadcn-ui, ou react-hot-toast.
+
+ Timeout de requisição: não nativo no Supabase, mas pode usar AbortController com fetch.
+
+🧪 Qualidade e Monitoramento
+ Tratamento global de erros: HOC de erro ou ErrorBoundary.
+
+ Logs detalhados (debug): console + envio para serviço (Ex: Logtail, Sentry).
+
+ Fallbacks de dados: mostre estado intermediário (ex: "Sem perfil cadastrado").
+
+⚙️ Performance
+ React Query + cache: ideal para dados como perfil, permissões e listagens.
+
+ Lazy loading de componentes: com React.lazy e Suspense.
+
+ Evitar chamadas duplicadas: armazene estado de sessão/contexto em local central.
+

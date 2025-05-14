@@ -1,0 +1,102 @@
+Verifique a Estrutura da Consulta: Se você está tentando buscar dados relacionados (como tenants), verifique se a relação está corretamente configurada no banco de dados e se existem dados correspondentes na tabela relacionada.
+
+Uso de single(): Se você espera que a consulta retorne exatamente um único registro, você pode usar o método single() em vez de select(). Isso fará com que o Supabase retorne um erro se não houver resultados ou se houver mais de um resultado.
+
+const
+ { data, error } = 
+await
+ supabase
+    .
+from
+(
+'users'
+)
+    .
+select
+(
+'tenant_id, tenants(*)'
+)
+    .eq(
+'id'
+, userId)
+    .single(); 
+// Use single() para garantir que apenas um registro seja retornado
+
+if
+ (error) {
+    console.error(
+"Erro ao buscar dados do usuário:"
+, error.message);
+    
+return
+ 
+null
+;
+}
+
+Verifique as Políticas de RLS: Se você estiver usando Row Level Security (RLS), verifique se as políticas estão configuradas corretamente para permitir que o usuário que está fazendo a solicitação acesse os dados.
+
+Teste a Consulta Diretamente: Tente executar a mesma consulta diretamente no painel do Supabase para ver se ela retorna os resultados esperados. Isso pode ajudar a identificar se o problema está na consulta ou na forma como ela está sendo chamada no seu código.
+
+Exemplo de Implementação
+Aqui está um exemplo de como você pode implementar a consulta com o método single():
+
+import
+ { supabase } 
+from
+ 
+"@/integrations/supabase/client"
+;
+const
+ fetchUserData = 
+async
+ (userId) => {
+    
+const
+ { data, error } = 
+await
+ supabase
+        .from(
+'users'
+)
+        .select(
+'tenant_id, tenants(*)'
+)
+        .eq(
+'id'
+, userId)
+        .single(); 
+// Garante que apenas um registro seja retornado
+
+    
+if
+ (error) {
+        
+console
+.error(
+"Erro ao buscar dados do usuário:"
+, error.message);
+        
+return
+ 
+null
+;
+    }
+    
+return
+ data;
+};
+// Chame a função com o ID do usuário
+
+const
+ userId = 
+'547f16ae-7841-439a-823d-e3d41bacb44b'
+;
+const
+ userData = 
+await
+ fetchUserData(userId);
+console
+.log(userData);
+
+Conclusão

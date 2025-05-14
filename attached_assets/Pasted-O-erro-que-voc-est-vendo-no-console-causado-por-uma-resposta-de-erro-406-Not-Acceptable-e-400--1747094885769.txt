@@ -1,0 +1,53 @@
+O erro que você está vendo no console é causado por uma resposta de erro 406 (Not Acceptable) e 400 (Bad Request) ao tentar carregar dados das tabelas profiles e users no Supabase.
+
+Causas possíveis para o erro:
+406 - Not Acceptable:
+Esse erro indica que a resposta do servidor não pode ser fornecida no formato solicitado. Isso pode ser causado por um problema nos cabeçalhos de Accept ou Content-Type que a sua requisição está enviando, ou o formato de resposta que você está pedindo não está disponível.
+
+Soluções:
+
+Verifique os cabeçalhos da requisição no seu código. A requisição pode estar pedindo um tipo de resposta que o servidor não pode fornecer (por exemplo, JSON ou outro formato).
+
+Certifique-se de que está configurando a URL da API corretamente e que a tabela ou os filtros estão corretos.
+
+400 - Bad Request:
+Esse erro geralmente ocorre quando a sintaxe da requisição está incorreta ou algum parâmetro da query está malformado. No seu caso, pode estar relacionado a parâmetros de consulta ou à tentativa de inserir dados com uma estrutura incorreta.
+
+Soluções:
+
+Verifique a URL da requisição, especialmente os parâmetros de query como select, on_conflict, columns, e outros. Certifique-se de que estão corretamente formatados.
+
+Revise as tabelas e a estrutura dos dados para garantir que os campos e os valores estão corretos, e que não há nenhum erro de formatação no corpo da requisição (como em columns=%22id%22).
+
+Possíveis ajustes para investigar:
+Verifique os cabeçalhos da requisição.
+Certifique-se de que está usando os cabeçalhos adequados, como:
+
+js
+Copiar
+Editar
+headers: {
+  "Content-Type": "application/json",
+  "Accept": "application/json",
+}
+Revise a consulta no Supabase.
+Se estiver usando filtros ou parâmetros, garanta que estão corretos. Por exemplo:
+
+js
+Copiar
+Editar
+const { data, error } = await supabase
+  .from('profiles')
+  .select('*')
+  .eq('id', '547f16ae-7841-439a-823d-e3d41bacb44b');
+Verifique se os parâmetros estão corretos e compatíveis com a sua estrutura de dados.
+
+Considere o tipo de dados em conflito.
+O erro também pode estar relacionado à operação de conflito (on_conflict). Se você estiver tentando criar ou atualizar registros, confira se o campo definido como on_conflict é válido e existe na tabela.
+
+Verifique permissões RLS (Row-Level Security).
+Se estiver usando políticas RLS no Supabase, certifique-se de que a autenticação e a configuração de roles estão corretas para que a requisição possa acessar os dados.
+
+Sugestão:
+Tente modificar suas requisições ou rever os parâmetros utilizados nas consultas. Verifique também as configurações de autenticação e permissões para garantir que não estão bloqueando o acesso aos dados.
+

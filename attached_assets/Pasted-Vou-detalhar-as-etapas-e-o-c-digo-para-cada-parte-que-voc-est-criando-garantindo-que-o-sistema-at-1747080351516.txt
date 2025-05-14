@@ -1,0 +1,228 @@
+Vou detalhar as etapas e o código para cada parte que você está criando, garantindo que o sistema atenda aos requisitos de controle de acesso e roles, além de persistência de sessão e feedback visual para o usuário.
+
+1. Criando o AuthContext
+Vamos começar criando o contexto de autenticação. Ele vai armazenar as informações de sessão e fornecer os métodos de login e logout.
+
+src/contexts/AuthContext.tsx:
+
+tsx
+Copiar
+Editar
+import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
+import { supabase } from '@/lib/supabase'; // Certifique-se de importar corretamente o cliente Supabase
+
+interface User {
+  email: string;
+  role: string; // Assume-se que o role seja armazenado na tabela 'profiles'
+}
+
+interface AuthContextType {
+  user: User | null;
+  session: any | null;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
+  isLoading: boolean;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<any | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setSession(session);
+      setUser(session?.user ?? null);
+      setIsLoading(false);
+    };
+    fetchSession();
+  }, []);
+
+  const login = async (email: string, password: string) => {
+    setIsLoading(true);
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      console.error('Login failed:', error.message);
+      return;
+    }
+    setUser(data.user);
+    setSession(data.session);
+    setIsLoading(false);
+  };
+
+  const logout = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+    setSession(null);
+  };
+
+  return (
+    <AuthContext.Provider value={{ user, session, login, logout, isLoading }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export const useAuth = (): AuthContextType => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
+Aqui estamos criando o AuthContext, que fornecerá o estado de autenticação, login, logout e a verificação de sessão.
+
+2. Atualizando o PrivateRoute para Controle de Acesso Baseado em Roles
+Agora, vamos criar o componente PrivateRoute, que será responsável por verificar se o usuário tem a role necessária para acessar uma rota específica.
+
+src/components/PrivateRoute.tsx:
+
+tsx
+Copiar
+Editar
+import React from 'react';
+import { Route, Redirect } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+
+interface PrivateRouteProps {
+  children: React.ReactNode;
+  allowedRoles: string[];
+  path: string;
+}
+
+const PrivateRoute = ({ children, allowedRoles, path }: PrivateRouteProps) => {
+  const { user, isLoading } = useAuth();
+
+  if (isLoading) {
+    return <div>Loading...</div>; // Exibe um estado de carregamento enquanto verifica a sessão
+  }
+
+  if (!user) {
+    return <Redirect to="/login" />;
+  }
+
+  // Verifica se o usuário tem a role necessária para acessar a rota
+  if (!allowedRoles.includes(user.role)) {
+    return <Redirect to="/unauthorized" />;
+  }
+
+  return <Route path={path}>{children}</Route>;
+};
+
+export default PrivateRoute;
+Neste componente, estamos usando a role do usuário para controlar o acesso. Caso o usuário não tenha permissão, ele é redirecionado para uma página de "Unauthorized". Se não estiver autenticado, ele é redirecionado para a página de login.
+
+3. Atualizando o LoginForm para Usar o AuthContext
+Agora, vamos atualizar o formulário de login para usar o contexto de autenticação.
+
+src/components/LoginForm.tsx:
+
+tsx
+Copiar
+Editar
+import React, { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
+
+const LoginForm = () => {
+  const { login, isLoading } = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await login(email, password);
+      navigate('/dashboard'); // Redireciona para o dashboard após o login
+    } catch (error) {
+      setError('Login failed');
+    }
+  };
+
+  return (
+    <div>
+      <h2>Login</h2>
+      {error && <p>{error}</p>}
+      <form onSubmit={handleLogin}>
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+        <button type="submit" disabled={isLoading}>
+          {isLoading ? 'Logging in...' : 'Login'}
+        </button>
+      </form>
+    </div>
+  );
+};
+
+export default LoginForm;
+Aqui, estamos usando o login do AuthContext para autenticar o usuário. Após o login bem-sucedido, o usuário será redirecionado para o /dashboard.
+
+4. Atualizando o App.tsx para Incluir o AuthProvider
+Agora, vamos envolver a aplicação com o AuthProvider em App.tsx para garantir que o contexto de autenticação esteja disponível em todo o aplicativo.
+
+src/App.tsx:
+
+tsx
+Copiar
+Editar
+import React from 'react';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import { AuthProvider } from '@/contexts/AuthContext';
+import LoginForm from '@/components/LoginForm';
+import PrivateRoute from '@/components/PrivateRoute';
+import Dashboard from './pages/Dashboard';
+import Unauthorized from './pages/Unauthorized';
+
+const App = () => {
+  return (
+    <AuthProvider>
+      <Router>
+        <Switch>
+          <Route path="/login" component={LoginForm} />
+          <PrivateRoute path="/dashboard" allowedRoles={['admin', 'user']}>
+            <Dashboard />
+          </PrivateRoute>
+          <Route path="/unauthorized" component={Unauthorized} />
+        </Switch>
+      </Router>
+    </AuthProvider>
+  );
+};
+
+export default App;
+Em App.tsx, estamos envolvendo a aplicação com o AuthProvider e definindo as rotas protegidas com o PrivateRoute. O usuário precisa estar autenticado e ter a role necessária para acessar o /dashboard.
+
+5. Testando a Funcionalidade
+Persistência de Sessão: O Supabase gerencia a persistência da sessão automaticamente, ou seja, o usuário continuará autenticado mesmo após um refresh da página, desde que a sessão não tenha expirado.
+
+Controle de Roles: Certifique-se de que o campo role do usuário está sendo recuperado corretamente do Supabase (geralmente armazenado na tabela profiles). Esse campo será usado para o controle de acesso.
+
+Tratamento de Erros: Garanta que os erros de login, falta de permissão e outras falhas sejam tratados e informados adequadamente ao usuário.
+
+6. Finalizando
+Agora seu sistema está configurado para:
+
+Gerenciar a sessão do usuário.
+
+Controlar o acesso baseado em roles.
+
+Proteger as rotas.
+
+Redirecionar para o dashboard após login.
+
+Fornecer feedback visual ao usuário.

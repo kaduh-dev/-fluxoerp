@@ -1,0 +1,81 @@
+Aqui estão as informações necessárias para diagnosticar e resolver os problemas de integração com o Supabase, com base na estrutura do seu banco de dados e nas políticas de segurança:
+
+Variáveis de Ambiente do Supabase
+Você mencionou que as variáveis VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY estão faltando. Certifique-se de que você as configure corretamente no seu ambiente. Aqui estão as informações que você precisa:
+
+VITE_SUPABASE_URL: Esta é a URL do seu projeto Supabase, que pode ser encontrada nas configurações do projeto.
+VITE_SUPABASE_ANON_KEY: Esta é a chave anônima que permite acesso ao banco de dados. Também pode ser encontrada nas configurações de API do seu projeto.
+Estrutura do Banco de Dados
+As seguintes tabelas foram confirmadas como existentes no seu banco de dados:
+
+tenants
+users
+profiles
+permissions
+Aqui estão as definições das tabelas relevantes:
+
+SQL Query
+
+
+
+CREATE TABLE public.tenants (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  name text NOT NULL,
+  cnpj text NOT NULL,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  status text NULL,
+  CONSTRAINT tenants_pkey PRIMARY KEY (id),
+  CONSTRAINT tenants_cnpj_key UNIQUE (cnpj)
+);
+
+CREATE TABLE public.users (
+  id uuid NOT NULL,
+  name text NOT NULL,
+  email text NOT NULL,
+  tenant_id uuid NOT NULL,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  role text NULL DEFAULT 'user',
+  CONSTRAINT users_pkey PRIMARY KEY (id),
+  CONSTRAINT users_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE,
+  CONSTRAINT users_tenant_id_fkey FOREIGN KEY (tenant_id) REFERENCES tenants(id)
+);
+
+Configurações de Autenticação no Supabase
+Email Auth: Verifique se a autenticação por e-mail está habilitada nas configurações de autenticação do Supabase.
+Configurações de Redirecionamento: Confirme se a URL do site está configurada corretamente nas configurações de autenticação.
+Dados do Tenant
+ID do Tenant Atual: Você deve ter um tenant criado. Verifique se existe pelo menos um tenant na tabela tenants.
+Nome do Tenant: Certifique-se de que o nome do tenant está correto.
+Permissões RLS (Row Level Security)
+Verifique se as políticas RLS estão aplicadas corretamente nas tabelas. Aqui estão algumas políticas existentes:
+
+Política para visualizar o próprio tenant:
+
+SQL Query
+
+
+
+CREATE POLICY "Users can view their own tenant" ON tenants
+FOR SELECT
+TO authenticated
+USING (id IN (SELECT users.tenant_id FROM users WHERE (users.id = auth.uid())));
+
+Política para visualizar produtos no tenant:
+
+SQL Query
+
+
+
+CREATE POLICY "Users can view products in their tenant" ON products
+FOR SELECT
+TO authenticated
+USING (tenant_id IN (SELECT users.tenant_id FROM users WHERE (users.id = auth.uid())));
+
+Usuário Inicial
+Email do Usuário Admin: Verifique se você tem um usuário admin criado na tabela users.
+Role Atribuída: O usuário deve ter a role 'admin'.
+Tenant ID Vinculado ao Usuário: Confirme se o tenant_id do usuário está correto.
+Logs de Erro
+Logs do Console do Navegador: Verifique se há erros no console do navegador.
+Respostas de Erro do Supabase: Analise as respostas de erro que você está recebendo.
+Stack Traces de Exceções: Se houver exceções, verifique os stack traces para entender onde o problema pode estar.

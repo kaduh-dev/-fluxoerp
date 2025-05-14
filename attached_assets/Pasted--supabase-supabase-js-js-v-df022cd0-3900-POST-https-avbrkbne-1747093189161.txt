@@ -1,0 +1,112 @@
+@supabase_supabase-js.js?v=df022cd0:3900 
+            
+            
+           POST https://avbrkbnenbtjeldudymz.supabase.co/rest/v1/profiles?columns=%22id%22%2C%22full_name%22%2C%22role%22&select=* 403 (Forbidden)
+(anonymous) @ @supabase_supabase-js.js?v=df022cd0:3900
+(anonymous) @ @supabase_supabase-js.js?v=df022cd0:3921
+fulfilled @ @supabase_supabase-js.js?v=df022cd0:3873
+Promise.then
+step @ @supabase_supabase-js.js?v=df022cd0:3886
+(anonymous) @ @supabase_supabase-js.js?v=df022cd0:3888
+__awaiter6 @ @supabase_supabase-js.js?v=df022cd0:3870
+(anonymous) @ @supabase_supabase-js.js?v=df022cd0:3911
+then @ @supabase_supabase-js.js?v=df022cd0:89Understand this error
+AuthContext.tsx:62 Error loading user profile: {code: '42501', details: null, hint: null, message: 'new row violates row-level security policy for table "profiles"'}
+loadUserProfile @ AuthContext.tsx:62
+await in loadUserProfile
+(anonymous) @ AuthContext.tsx:117
+(anonymous) @ @supabase_supabase-js.js?v=df022cd0:6405
+_notifyAllSubscribers @ @supabase_supabase-js.js?v=df022cd0:6403
+signInWithPassword @ @supabase_supabase-js.js?v=df022cd0:5332
+await in signInWithPassword
+login @ AuthContext.tsx:144
+handleSubmit @ LoginForm.tsx:26
+callCallback2 @ chunk-W6L2VRDA.js?v=df022cd0:3674
+invokeGuardedCallbackDev @ chunk-W6L2VRDA.js?v=df022cd0:3699
+invokeGuardedCallback @ chunk-W6L2VRDA.js?v=df022cd0:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-W6L2VRDA.js?v=df022cd0:3736
+executeDispatch @ chunk-W6L2VRDA.js?v=df022cd0:7014
+processDispatchQueueItemsInOrder @ chunk-W6L2VRDA.js?v=df022cd0:7034
+processDispatchQueue @ chunk-W6L2VRDA.js?v=df022cd0:7043
+dispatchEventsForPlugins @ chunk-W6L2VRDA.js?v=df022cd0:7051
+(anonymous) @ chunk-W6L2VRDA.js?v=df022cd0:7174
+batchedUpdates$1 @ chunk-W6L2VRDA.js?v=df022cd0:18913
+batchedUpdates @ chunk-W6L2VRDA.js?v=df022cd0:3579
+dispatchEventForPluginEventSystem @ chunk-W6L2VRDA.js?v=df022cd0:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-W6L2VRDA.js?v=df022cd0:5478
+dispatchEvent @ chunk-W6L2VRDA.js?v=df022cd0:5472
+dispatchDiscreteEvent @ chunk-W6L2VRDA.js?v=df022cd0:5449Understand this error
+@supabase_supabase-js.js?v=df022cd0:3900 
+            
+            
+           POST https://avbrkbnenbtjeldudymz.supabase.co/rest/v1/profiles?columns=%22id%22%2C%22full_name%22%2C%22role%22&select=* 403 (Forbidden)
+(anonymous) @ @supabase_supabase-js.js?v=df022cd0:3900
+(anonymous) @ @supabase_supabase-js.js?v=df022cd0:3921
+fulfilled @ @supabase_supabase-js.js?v=df022cd0:3873
+Promise.then
+step @ @supabase_supabase-js.js?v=df022cd0:3886
+(anonymous) @ @supabase_supabase-js.js?v=df022cd0:3888
+__awaiter6 @ @supabase_supabase-js.js?v=df022cd0:3870
+(anonymous) @ @supabase_supabase-js.js?v=df022cd0:3911
+then @ @supabase_supabase-js.js?v=df022cd0:89Understand this error
+AuthContext.tsx:62 Error loading user profile: {code: '42501', details: null, hint: null, message: 'new row violates row-level security policy for table "profiles"'}
+loadUserProfile @ AuthContext.tsx:62
+await in loadUserProfile
+(anonymous) @ AuthContext.tsx:117
+(anonymous) @ @supabase_supabase-js.js?v=df022cd0:6405
+_notifyAllSubscribers @ @supabase_supabase-js.js?v=df022cd0:6403
+signInWithPassword @ @supabase_supabase-js.js?v=df022cd0:5332
+await in signInWithPassword
+login @ AuthContext.tsx:144
+handleSubmit @ LoginForm.tsx:26
+callCallback2 @ chunk-W6L2VRDA.js?v=df022cd0:3674
+invokeGuardedCallbackDev @ chunk-W6L2VRDA.js?v=df022cd0:3699
+invokeGuardedCallback @ chunk-W6L2VRDA.js?v=df022cd0:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-W6L2VRDA.js?v=df022cd0:3736
+executeDispatch @ chunk-W6L2VRDA.js?v=df022cd0:7014
+processDispatchQueueItemsInOrder @ chunk-W6L2VRDA.js?v=df022cd0:7034
+processDispatchQueue @ chunk-W6L2VRDA.js?v=df022cd0:7043
+dispatchEventsForPlugins @ chunk-W6L2VRDA.js?v=df022cd0:7051
+(anonymous) @ chunk-W6L2VRDA.js?v=df022cd0:7174
+batchedUpdates$1 @ chunk-W6L2VRDA.js?v=df022cd0:18913
+batchedUpdates @ chunk-W6L2VRDA.js?v=df022cd0:3579
+dispatchEventForPluginEventSystem @ chunk-W6L2VRDA.js?v=df022cd0:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-W6L2VRDA.js?v=df022cd0:5478
+dispatchEvent @ chunk-W6L2VRDA.js?v=df022cd0:5472
+dispatchDiscreteEvent @ chunk-W6L2VRDA.js?v=df022cd0:5449Understand this error
+AuthContext.tsx:149 Login attempt: {user: {…}, error: null}
+@supabase_supabase-js.js?v=df022cd0:3900 
+            
+            
+           POST https://avbrkbnenbtjeldudymz.supabase.co/rest/v1/profiles?columns=%22id%22%2C%22full_name%22%2C%22role%22&select=* 403 (Forbidden)
+(anonymous) @ @supabase_supabase-js.js?v=df022cd0:3900
+(anonymous) @ @supabase_supabase-js.js?v=df022cd0:3921
+fulfilled @ @supabase_supabase-js.js?v=df022cd0:3873
+Promise.then
+step @ @supabase_supabase-js.js?v=df022cd0:3886
+(anonymous) @ @supabase_supabase-js.js?v=df022cd0:3888
+__awaiter6 @ @supabase_supabase-js.js?v=df022cd0:3870
+(anonymous) @ @supabase_supabase-js.js?v=df022cd0:3911
+then @ @supabase_supabase-js.js?v=df022cd0:89Understand this error
+AuthContext.tsx:62 Error loading user profile: {code: '42501', details: null, hint: null, message: 'new row violates row-level security policy for table "profiles"'}
+loadUserProfile @ AuthContext.tsx:62
+await in loadUserProfile
+login @ AuthContext.tsx:155
+await in login
+handleSubmit @ LoginForm.tsx:26
+callCallback2 @ chunk-W6L2VRDA.js?v=df022cd0:3674
+invokeGuardedCallbackDev @ chunk-W6L2VRDA.js?v=df022cd0:3699
+invokeGuardedCallback @ chunk-W6L2VRDA.js?v=df022cd0:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-W6L2VRDA.js?v=df022cd0:3736
+executeDispatch @ chunk-W6L2VRDA.js?v=df022cd0:7014
+processDispatchQueueItemsInOrder @ chunk-W6L2VRDA.js?v=df022cd0:7034
+processDispatchQueue @ chunk-W6L2VRDA.js?v=df022cd0:7043
+dispatchEventsForPlugins @ chunk-W6L2VRDA.js?v=df022cd0:7051
+(anonymous) @ chunk-W6L2VRDA.js?v=df022cd0:7174
+batchedUpdates$1 @ chunk-W6L2VRDA.js?v=df022cd0:18913
+batchedUpdates @ chunk-W6L2VRDA.js?v=df022cd0:3579
+dispatchEventForPluginEventSystem @ chunk-W6L2VRDA.js?v=df022cd0:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-W6L2VRDA.js?v=df022cd0:5478
+dispatchEvent @ chunk-W6L2VRDA.js?v=df022cd0:5472
+dispatchDiscreteEvent @ chunk-W6L2VRDA.js?v=df022cd0:5449Understand this error
+AuthContext.tsx:156 User profile loaded: null

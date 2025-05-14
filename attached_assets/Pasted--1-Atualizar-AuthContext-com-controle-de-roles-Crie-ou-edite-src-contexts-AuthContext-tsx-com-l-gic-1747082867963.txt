@@ -1,0 +1,115 @@
+ 1. Atualizar AuthContext com controle de roles
+Crie ou edite src/contexts/AuthContext.tsx com lógica completa para autenticação e gestão de role:
+
+tsx
+Copiar
+Editar
+import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { Session, User } from "@supabase/supabase-js";
+import { supabase } from "@/integrations/supabase/client";
+
+interface AuthContextType {
+  session: Session | null;
+  user: User | null;
+  role: string | null;
+  isLoading: boolean;
+}
+
+const AuthContext = createContext<AuthContextType>({
+  session: null,
+  user: null,
+  role: null,
+  isLoading: true,
+});
+
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [role, setRole] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const getSession = async () => {
+      const { data, error } = await supabase.auth.getSession();
+      if (error) console.error(error.message);
+      setSession(data.session);
+      setUser(data.session?.user ?? null);
+    };
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+    });
+
+    getSession();
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      if (!user) {
+        setRole(null);
+        setIsLoading(false);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+
+      if (error) {
+        console.error("Erro ao buscar perfil:", error.message);
+      } else {
+        setRole(data?.role ?? "user");
+      }
+
+      setIsLoading(false);
+    };
+
+    fetchUserRole();
+  }, [user]);
+
+  return (
+    <AuthContext.Provider value={{ session, user, role, isLoading }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export const useAuth = () => useContext(AuthContext);
+✅ 2. Criar página de acesso não autorizado
+src/pages/Unauthorized.tsx
+tsx
+Copiar
+Editar
+export default function Unauthorized() {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
+      <h1 className="text-3xl font-bold text-red-600">Acesso não autorizado</h1>
+      <p className="mt-2 text-gray-700">Você não tem permissão para acessar esta página.</p>
+    </div>
+  );
+}
+✅ 3. (Extra) Criar página 404 - NotFound.tsx
+src/pages/NotFound.tsx
+tsx
+Copiar
+Editar
+export default function NotFound() {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
+      <h1 className="text-4xl font-bold text-gray-800">404</h1>
+      <p className="mt-2 text-gray-600">Página não encontrada</p>
+    </div>
+  );
+}
+Depois disso, certifique-se de que:
+
+O AuthProvider está em volta de suas rotas no App.tsx.
+
+Você usa <PrivateRoute allowedRoles={['admin']}>...</PrivateRoute> para proteger páginas.

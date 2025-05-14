@@ -1,0 +1,36 @@
+Atualmente, ao iniciar a aplicação (npm run dev), a tela web aparece totalmente em branco, sem mensagens de erro visíveis no navegador.
+
+Abaixo está o código da aplicação (incluindo App.tsx, TenantContext.tsx, LoginForm.tsx, e o cliente do Supabase).
+
+Por favor, revise todo o projeto com foco nos seguintes pontos:
+
+✅ Revisar Lógica Geral:
+Verifique se há erros de lógica ou problemas na renderização condicional que estejam impedindo a exibição da UI.
+
+Confirme se os componentes PrivateRoute, TenantProvider, QueryClientProvider, TooltipProvider e BrowserRouter estão sendo renderizados corretamente e em ordem apropriada.
+
+Certifique-se de que useState, useEffect ou onAuthStateChange não estão deixando o app preso em um estado de carregamento indefinidamente (null, undefined, isLoading etc.).
+
+🔐 Verificar Autenticação e Sessão:
+Valide se o Supabase está sendo instanciado corretamente a partir de um único arquivo (@/integrations/supabase/client).
+
+Verifique se o login e a sessão estão funcionando corretamente (sem múltiplas instâncias do GoTrueClient).
+
+Confirme se a função set_tenant_id está sendo chamada no momento certo, com os parâmetros corretos, após o login bem-sucedido.
+
+🔄 Rotas e Navegação:
+Cheque se as rotas estão corretas e não estão todas redirecionando para uma tela em branco.
+
+Confirme se o componente <Navigate> ou <PrivateRoute> não está redirecionando erroneamente para uma rota inválida.
+
+❌ Identificar e Corrigir:
+Aponte erros de lógica, hooks mal posicionados, estados não tratados ou chamadas assíncronas que não concluem.
+
+Liste possíveis causas para a tela em branco com base no código e sugira como resolvê-las.
+
+ℹ️ Extras:
+Caso possível, simule um fluxo de login e carregamento de tenant para validar se tudo está funcionando em conjunto.
+
+Sugira boas práticas para esse tipo de arquitetura (autenticação centralizada + multitenancy por função RPC).
+
+O objetivo é garantir que a aplicação SaaS esteja carregando corretamente e respeitando a lógica de multitenancy por tenant_id, protegendo dados por usuário e evitando múltiplas instâncias do Supabase.
