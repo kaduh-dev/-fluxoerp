@@ -107,4 +107,22 @@
   .animate-pulse-slow {
     animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
+  
+  /* Estilos para melhorar a experiência do usuário com a sidebar */
+  .sidebar-transition {
+    transition: width 0.3s ease-in-out, transform 0.3s ease-in-out;
+  }
+  
+  .sidebar-icon {
+    transition: all 0.2s ease;
+  }
+  
+  .sidebar-icon:hover {
+    transform: scale(1.1);
+  }
+  
+  /* Melhora na visualização de conteúdo */
+  .content-wrapper {
+    transition: margin-left 0.3s ease-in-out, padding 0.3s ease-in-out;
+  }
 }
