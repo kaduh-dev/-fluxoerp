@@ -6,7 +6,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { FileText } from "lucide-react";
+import { FileText, Download } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
 
 interface ExportOptionsProps {
@@ -14,73 +14,80 @@ interface ExportOptionsProps {
   filename?: string;
 }
 
-export const ExportOptions = ({ data, filename = "produtos" }: ExportOptionsProps) => {
-  const handleExportCSV = () => {
+export function ExportOptions({ data, filename = "export" }: ExportOptionsProps) {
+  const exportToCSV = () => {
     try {
       if (!data || data.length === 0) {
         toast.error("Não há dados para exportar");
         return;
       }
 
-      // Get headers from first object keys
+      // Gerar cabeçalho
       const headers = Object.keys(data[0]);
-      
-      // Convert data to CSV
-      const csvRows = [];
-      csvRows.push(headers.join(","));
-      
-      for (const row of data) {
-        const values = headers.map(header => {
-          const value = row[header];
-          return typeof value === "string" ? `"${value.replace(/"/g, '""')}"` : value;
-        });
-        csvRows.push(values.join(","));
-      }
+      let csvContent = headers.join(",") + "\n";
 
-      const csvContent = csvRows.join("\n");
-      
-      // Create download link
+      // Gerar linhas de dados
+      data.forEach(item => {
+        const row = headers.map(header => {
+          const value = item[header] !== null && item[header] !== undefined ? item[header] : '';
+          // Escapar aspas e valores com vírgula
+          return typeof value === 'string' && (value.includes(',') || value.includes('"')) 
+            ? `"${value.replace(/"/g, '""')}"` 
+            : String(value);
+        });
+        csvContent += row.join(",") + "\n";
+      });
+
+      // Criar e baixar o arquivo
       const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
-      
-      // Create hidden link and trigger download
       const link = document.createElement("a");
       link.setAttribute("href", url);
-      link.setAttribute("download", `${filename}-${new Date().toISOString().split('T')[0]}.csv`);
+      link.setAttribute("download", `${filename}.csv`);
       link.style.visibility = "hidden";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       
-      toast.success("Arquivo CSV exportado com sucesso!");
+      toast.success("Arquivo CSV exportado com sucesso");
     } catch (error) {
-      console.error("Erro ao exportar CSV:", error);
-      toast.error("Erro ao exportar o arquivo");
+      console.error("Erro ao exportar para CSV:", error);
+      toast.error("Erro ao exportar dados");
     }
   };
 
-  const handleExportPDF = () => {
-    // In a real implementation, we would use a library like jsPDF
-    // For now, we'll just show a toast message
-    toast.info("Exportação de PDF em desenvolvimento");
+  const exportToPDF = () => {
+    // Simulação - em um ambiente real, você usaria uma biblioteca como jsPDF
+    toast.success("Exportação para PDF será implementada em breve");
+  };
+
+  const exportToExcel = () => {
+    // Simulação - em um ambiente real, você usaria uma biblioteca como xlsx
+    toast.success("Exportação para Excel será implementada em breve");
   };
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline">
-          <FileText className="mr-2 h-4 w-4" />
+        <Button variant="outline" size="sm">
+          <Download className="mr-2 h-4 w-4" />
           Exportar
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={handleExportCSV}>
-          Exportar como CSV
+        <DropdownMenuItem onClick={exportToCSV}>
+          <FileText className="mr-2 h-4 w-4" />
+          CSV
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleExportPDF}>
-          Exportar como PDF
+        <DropdownMenuItem onClick={exportToExcel}>
+          <FileText className="mr-2 h-4 w-4" />
+          Excel
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={exportToPDF}>
+          <FileText className="mr-2 h-4 w-4" />
+          PDF
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
-};
+}

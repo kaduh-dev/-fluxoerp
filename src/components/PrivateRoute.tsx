@@ -2,6 +2,7 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/components/ui/sonner';
+import { useEffect } from 'react';
 
 interface PrivateRouteProps {
   children: React.ReactNode;
@@ -9,8 +10,15 @@ interface PrivateRouteProps {
 }
 
 export function PrivateRoute({ children, requiredRoles }: PrivateRouteProps) {
-  const { user, isLoading, hasRole } = useAuth();
+  const { user, isLoading, hasRole, refreshSession } = useAuth();
   const location = useLocation();
+
+  // Tenta atualizar a sessão quando o componente for montado
+  useEffect(() => {
+    if (!user && !isLoading) {
+      refreshSession();
+    }
+  }, [user, isLoading, refreshSession]);
 
   if (isLoading) {
     return (
@@ -24,6 +32,7 @@ export function PrivateRoute({ children, requiredRoles }: PrivateRouteProps) {
   }
 
   if (!user) {
+    toast.error('Você precisa estar autenticado para acessar esta página');
     return <Navigate to="/login" state={{ from: location.pathname }} replace />;
   }
 

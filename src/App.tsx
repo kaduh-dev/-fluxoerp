@@ -68,6 +68,7 @@ const App = () => (
                 <Route path="/financial/entries" element={<PrivateRoute><FinancialEntries /></PrivateRoute>} />
                 <Route path="/financial/cash-flow" element={<PrivateRoute><CashFlow /></PrivateRoute>} />
                 <Route path="/clients-suppliers" element={<PrivateRoute><ClientsSuppliers /></PrivateRoute>} />
+                <Route path="/inventory/stock-movements" element={<PrivateRoute><StockMovements /></PrivateRoute>} />
 
                 {/* Special routes */}
                 <Route path="/unauthorized" element={<PrivateRoute><Unauthorized /></PrivateRoute>} />
