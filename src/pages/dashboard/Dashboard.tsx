@@ -40,21 +40,22 @@ const Dashboard = () => {
     const fetchDashboardData = async () => {
       if (!currentTenant?.id) return;
 
-      // Verificar conexão com o Supabase
+      // Verificar conexão com o Supabase - continuamos registrando no console
+      // mas simplificamos a mensagem para o usuário
       try {
         const { error: pingError } = await supabase.from('products').select('id').limit(1);
         if (pingError) {
           console.error('Supabase connection error:', pingError);
-          toast.error("Erro de conexão com o banco de dados", {
-            description: "Verifique sua conexão de internet e tente novamente."
+          toast.error("Não foi possível carregar os dados", {
+            description: "Tente novamente em alguns instantes."
           });
           setIsDataLoading(false);
           return;
         }
       } catch (pingError) {
         console.error('Supabase ping failed:', pingError);
-        toast.error("Erro de conexão", {
-          description: "Não foi possível estabelecer conexão com o servidor."
+        toast.error("Problemas de conexão", {
+          description: "Verifique sua internet e atualize a página."
         });
         setIsDataLoading(false);
         return;
@@ -92,16 +93,16 @@ const Dashboard = () => {
         // Simplificamos a verificação da tabela - assumindo que a estrutura está correta
         // mas a tabela pode estar vazia (o que é normal para um sistema novo)
         console.log('Verificando dados financeiros para o tenant:', currentTenant.id);
-        
+
         const financialQuery = supabase
           .from('financial_entries')
           .select('value, type')
           .eq('tenant_id', currentTenant.id)
           .gte('created_at', startOfMonth.toISOString())
           .lte('created_at', endOfMonth.toISOString());
-          
+
         const { data: financialData, error: financialError } = await financialQuery;
-        
+
         if (financialError) {
           // Se o erro for relacionado à coluna não existente, podemos tentar uma consulta alternativa
           if (financialError.code === '42703' && financialError.message?.includes('column financial_entries.value does not exist')) {
@@ -111,11 +112,11 @@ const Dashboard = () => {
           } else {
             console.error('Financial data query error details:', financialError);
           }
-          
+
           // Em vez de lançar um erro, simplesmente continuamos com dados vazios
           console.log('Continuando com dados financeiros vazios');
         }
-        
+
         console.log('Financial data retrieved:', financialData?.length || 0, 'entries');
 
         let totalRevenue = 0;
@@ -162,16 +163,16 @@ const Dashboard = () => {
         });
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
-        
+
         // Mensagem personalizada com base no tipo de erro
         let errorDescription = "Verifique a conexão e tente novamente.";
         let shouldShowError = true;
-        
+
         if (error instanceof Error) {
           // Se for um erro com mensagem específica
           errorDescription = error.message || errorDescription;
           console.error('Error details:', error);
-          
+
           // Se o erro for relacionado a tabelas vazias, não exibimos o erro ao usuário
           if (error.message.includes('does not exist') || 
               error.message.includes('tabela vazia') ||
@@ -182,7 +183,7 @@ const Dashboard = () => {
         } else if (typeof error === 'object' && error !== null) {
           // Para erros do Supabase ou outros objetos de erro
           const errorObj = error as any;
-          
+
           // Verificamos se é um erro relacionado a tabelas/colunas inexistentes
           if (errorObj.code === '42703' || errorObj.code === '42P01') {
             shouldShowError = false;
@@ -194,10 +195,10 @@ const Dashboard = () => {
           } else {
             errorDescription = errorObj.message || errorObj.details || errorObj.error || JSON.stringify(error);
           }
-          
+
           console.error('Error details:', errorObj);
         }
-        
+
         if (shouldShowError) {
           toast.error("Erro ao carregar dados do dashboard", {
             description: errorDescription
