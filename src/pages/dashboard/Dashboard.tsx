@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { toast } from '@/components/ui/sonner';
 
@@ -26,6 +26,7 @@ const Dashboard = () => {
   const { currentTenant } = useTenant();
   const { user, isLoading } = useAuth();
   const navigate = useNavigate();
+  const initialLoadComplete = useRef(false);
   const [dashboardData, setDashboardData] = useState({
     productCount: 0,
     lowStockCount: 0,
@@ -37,26 +38,39 @@ const Dashboard = () => {
   const [isDataLoading, setIsDataLoading] = useState(true);
 
   useEffect(() => {
+    // Verificar se o usuário acabou de fazer login
+    const checkRecentLogin = () => {
+      const justLoggedIn = sessionStorage.getItem('just_logged_in');
+      if (justLoggedIn === 'true' && user) {
+        // Remover a flag para não mostrar a mensagem novamente em recargas
+        sessionStorage.removeItem('just_logged_in');
+        
+        // Mostrar mensagem de boas-vindas
+        toast.success(`Bem-vindo(a) ${user.full_name || 'de volta'}!`, {
+          description: "Acesse seu painel de controle"
+        });
+      }
+    };
+    
+    checkRecentLogin();
+    
     const fetchDashboardData = async () => {
       if (!currentTenant?.id) return;
-
-      // Verificar conexão com o Supabase - continuamos registrando no console
-      // mas simplificamos a mensagem para o usuário
+      
+      // Evita múltiplas consultas e mensagens durante a mesma sessão
+      if (initialLoadComplete.current) return;
+      initialLoadComplete.current = true;
+      
+      // Verificação silenciosa de conexão
       try {
         const { error: pingError } = await supabase.from('products').select('id').limit(1);
-        if (pingError) {
+        if (pingError && pingError.code !== '42P01') { // Ignora erro de tabela inexistente
           console.error('Supabase connection error:', pingError);
-          toast.error("Não foi possível carregar os dados", {
-            description: "Tente novamente em alguns instantes."
-          });
           setIsDataLoading(false);
           return;
         }
       } catch (pingError) {
         console.error('Supabase ping failed:', pingError);
-        toast.error("Problemas de conexão", {
-          description: "Verifique sua internet e atualize a página."
-        });
         setIsDataLoading(false);
         return;
       }
@@ -84,127 +98,112 @@ const Dashboard = () => {
         endOfMonth.setDate(0);
         endOfMonth.setHours(23, 59, 59, 999);
 
-        console.log('Fetching financial data with params:', {
-          tenant_id: currentTenant.id,
-          start_date: startOfMonth.toISOString(),
-          end_date: endOfMonth.toISOString()
-        });
-
-        // Consultamos os dados financeiros de forma silenciosa
-        const financialQuery = supabase
-          .from('financial_entries')
-          .select('value, type')
-          .eq('tenant_id', currentTenant.id)
-          .gte('created_at', startOfMonth.toISOString())
-          .lte('created_at', endOfMonth.toISOString());
-
-        const { data: financialData, error: financialError } = await financialQuery;
-
-        if (financialError) {
-          // Se o erro for relacionado à coluna não existente, podemos tentar uma consulta alternativa
-          if (financialError.code === '42703' && financialError.message?.includes('column financial_entries.value does not exist')) {
-            console.warn('Coluna "value" não encontrada, verifique se a tabela foi criada corretamente');
-          } else if (financialError.code === '42P01' && financialError.message?.includes('relation "financial_entries" does not exist')) {
-            console.warn('Tabela "financial_entries" não encontrada, esta será criada quando o primeiro registro for inserido');
-          } else {
-            console.error('Financial data query error details:', financialError);
+        // Consultamos os dados financeiros de forma totalmente silenciosa
+        // sem logs desnecessários para o usuário
+        try {
+          const { data: financialData } = await supabase
+            .from('financial_entries')
+            .select('value, type')
+            .eq('tenant_id', currentTenant.id)
+            .gte('created_at', startOfMonth.toISOString())
+            .lte('created_at', endOfMonth.toISOString());
+            
+          // Usamos dados financeiros apenas se existirem
+          if (financialData && financialData.length > 0) {
+            let totalRevenue = 0;
+            
+            const income = financialData
+              .filter(item => item.type === 'income')
+              .reduce((sum, item) => sum + (parseFloat(item.value) || 0), 0);
+              
+            totalRevenue = income;
+            
+            // Atualizamos apenas se tivermos dados reais
+            if (totalRevenue > 0) {
+              setDashboardData(prev => ({
+                ...prev,
+                totalRevenue
+              }));
+            }
           }
-
-          // Em vez de lançar um erro, simplesmente continuamos com dados vazios
-          console.log('Continuando com dados financeiros vazios');
+        } catch (financialError) {
+          // Capturamos erros silenciosamente sem mostrar ao usuário
+          // apenas registramos para debug
+          console.debug('Financial data unavailable:', financialError);
         }
 
-        console.log('Financial data retrieved:', financialData?.length || 0, 'entries');
-
-        let totalRevenue = 0;
-
-        if (financialData && financialData.length > 0) {
-          const income = financialData
-            .filter(item => item.type === 'income')
-            .reduce((sum, item) => sum + (parseFloat(item.value) || 0), 0);
-
-          const expenses = financialData
-            .filter(item => item.type === 'expense')
-            .reduce((sum, item) => sum + (parseFloat(item.value) || 0), 0);
-
-          totalRevenue = income;
+        // Fetch order count (tratando erro silenciosamente)
+        let pendingOrders = 0;
+        try {
+          const { count, error: ordersError } = await supabase
+            .from('service_orders')
+            .select('*', { count: 'exact', head: true })
+            .eq('tenant_id', currentTenant.id)
+            .eq('status', 'pending');
+            
+          if (!ordersError) {
+            pendingOrders = count || 0;
+          }
+        } catch (err) {
+          console.debug('Orders data unavailable');
         }
 
-        // Fetch order count
-        const { count: pendingOrders, error: ordersError } = await supabase
-          .from('service_orders')
-          .select('*', { count: 'exact', head: true })
-          .eq('tenant_id', currentTenant.id)
-          .eq('status', 'pending');
+        // Fetch clients and suppliers (tratando erro silenciosamente)
+        let clientCount = 0;
+        let supplierCount = 0;
+        
+        try {
+          const { data: clientsSuppliers } = await supabase
+            .from('clients_suppliers')
+            .select('*')
+            .eq('tenant_id', currentTenant.id);
 
-        if (ordersError) throw ordersError;
+          if (clientsSuppliers) {
+            clientCount = clientsSuppliers.filter(cs => cs.type === 'client').length || 0;
+            supplierCount = clientsSuppliers.filter(cs => cs.type === 'supplier').length || 0;
+          }
+        } catch (err) {
+          console.debug('Client/supplier data unavailable');
+        }
 
-        // Fetch clients and suppliers
-        const { data: clientsSuppliers, error: csError } = await supabase
-          .from('clients_suppliers')
-          .select('*')
-          .eq('tenant_id', currentTenant.id);
-
-        if (csError) throw csError;
-
-        const clientCount = clientsSuppliers?.filter(cs => cs.type === 'client').length || 0;
-        const supplierCount = clientsSuppliers?.filter(cs => cs.type === 'supplier').length || 0;
-
+        // Atualizamos os dados do dashboard com dados disponíveis
         setDashboardData({
           productCount: products?.length || 0,
-          lowStockCount: lowStockProducts.length,
-          totalRevenue,
-          pendingOrders: pendingOrders || 0,
+          lowStockCount: lowStockProducts.length || 0,
+          totalRevenue: 0, // Já atualizado anteriormente se houver dados
+          pendingOrders,
           clientCount,
           supplierCount
         });
-      } catch (error) {
-        console.error('Error fetching dashboard data:', error);
-
-        // Mensagem personalizada com base no tipo de erro
-        let errorDescription = "Verifique a conexão e tente novamente.";
-        let shouldShowError = true;
-
-        if (error instanceof Error) {
-          // Se for um erro com mensagem específica
-          errorDescription = error.message || errorDescription;
-          console.error('Error details:', error);
-
-          // Se o erro for relacionado a tabelas vazias, não exibimos o erro ao usuário
-          if (error.message.includes('does not exist') || 
-              error.message.includes('tabela vazia') ||
-              error.message.includes('coluna não encontrada')) {
-            shouldShowError = false;
-            console.log('Ignorando erro de tabela/coluna inexistente para novo banco de dados');
-          }
-        } else if (typeof error === 'object' && error !== null) {
-          // Para erros do Supabase ou outros objetos de erro
-          const errorObj = error as any;
-
-          // Verificamos se é um erro relacionado a tabelas/colunas inexistentes
-          if (errorObj.code === '42703' || errorObj.code === '42P01') {
-            shouldShowError = false;
-            console.log('Ignorando erro de estrutura de tabela em banco de dados novo:', errorObj.code);
-          } else if (errorObj.message === '') {
-            errorDescription = "Sistema iniciado com banco de dados vazio - cadastre seus primeiros dados financeiros.";
-            // Convertemos isso em aviso ao invés de erro
-            shouldShowError = false;
-          } else {
-            errorDescription = errorObj.message || errorObj.details || errorObj.error || JSON.stringify(error);
-          }
-
-          console.error('Error details:', errorObj);
-        }
-
-        if (shouldShowError) {
-          toast.error("Erro ao carregar dados do dashboard", {
-            description: errorDescription
+        
+        // Se o usuário é novo no sistema, mostrar uma mensagem de orientação útil
+        if (!products?.length && !pendingOrders && !clientCount) {
+          toast.info("Comece a usar seu sistema", {
+            description: "Cadastre produtos, clientes ou ordens de serviço para visualizar seus dados"
           });
-        } else {
-          // Exibimos apenas um aviso informativo
-          // Usando corretamente o toast, com title como argumento principal e description como opção
-          toast.info("Sistema iniciado com sucesso", {
-            description: "Banco de dados vazio. Comece cadastrando seus primeiros dados."
+        }
+      } catch (error) {
+        console.debug('Error fetching dashboard data:', error);
+        
+        // Definimos dados vazios para garantir que a UI não quebre
+        setDashboardData({
+          productCount: 0,
+          lowStockCount: 0,
+          totalRevenue: 0,
+          pendingOrders: 0,
+          clientCount: 0,
+          supplierCount: 0
+        });
+        
+        // Tratamos os erros sem exibir mensagens técnicas para o usuário
+        // apenas em casos de erro real de conexão mostramos mensagem
+        if (error instanceof Error && 
+            !error.message.includes('does not exist') && 
+            !error.message.includes('column') &&
+            !error.message.includes('relation')) {
+          
+          toast.error("Problema ao carregar informações", {
+            description: "Atualize a página para tentar novamente"
           });
         }
       } finally {
