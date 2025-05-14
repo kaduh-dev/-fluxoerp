@@ -9,7 +9,11 @@ interface SummaryCardsProps {
 
 export const SummaryCards = ({ products }: SummaryCardsProps) => {
   // Calculate total inventory value
-  const totalInventoryValue = products.reduce((acc, p) => acc + p.price * p.quantity, 0);
+  const totalInventoryValue = products.reduce((acc, p) => {
+    const price = p.sale_price || 0;
+    const quantity = p.stock || 0;
+    return acc + (price * quantity);
+  }, 0);
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

@@ -3,9 +3,9 @@ import { useState } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2 } from "lucide-react";
+import { Edit, Trash2, AlertCircle } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
-import { Product } from "../types";
+import { Product } from "../../../pages/inventory/types";
 import { 
   Pagination, 
   PaginationContent, 
@@ -15,6 +15,15 @@ import {
 } from "@/components/ui/pagination";
 import { toast } from "@/components/ui/sonner";
 import { ExportOptions } from "@/components/inventory/ExportOptions";
+import { 
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter
+} from "@/components/ui/dialog";
+import { useNavigate } from "react-router-dom";
 
 interface ProductsTableProps {
   products: Product[];

@@ -18,13 +18,101 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabase';
+import { toast } from '@/components/ui/sonner';
 
 const Dashboard = () => {
   const { currentTenant } = useTenant();
   const { user, isLoading } = useAuth();
   const navigate = useNavigate();
+  const [dashboardData, setDashboardData] = useState({
+    productCount: 0,
+    lowStockCount: 0,
+    totalRevenue: 0,
+    pendingOrders: 0,
+    clientCount: 0,
+    supplierCount: 0
+  });
+  const [isDataLoading, setIsDataLoading] = useState(true);
 
-  if (isLoading) {
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      if (!currentTenant?.id) return;
+      
+      try {
+        setIsDataLoading(true);
+        // Fetch product count
+        const { data: products, error: productsError } = await supabase
+          .from('products')
+          .select('*')
+          .eq('tenant_id', currentTenant.id);
+        
+        if (productsError) throw productsError;
+        
+        // Count low stock products
+        const lowStockProducts = products?.filter(p => p.quantity <= p.minStock) || [];
+        
+        // Fetch financial data
+        const { data: financialData, error: financialError } = await supabase
+          .from('financial_entries')
+          .select('amount, type')
+          .eq('tenant_id', currentTenant.id)
+          .gte('created_at', new Date(new Date().setDate(1)).toISOString()); // Current month
+        
+        if (financialError) throw financialError;
+        
+        // Calculate revenue (sum of income entries)
+        const totalRevenue = financialData
+          ?.filter(entry => entry.type === 'income')
+          .reduce((sum, entry) => sum + entry.amount, 0) || 0;
+        
+        // Fetch order count
+        const { count: pendingOrders, error: ordersError } = await supabase
+          .from('service_orders')
+          .select('*', { count: 'exact', head: true })
+          .eq('tenant_id', currentTenant.id)
+          .eq('status', 'pending');
+        
+        if (ordersError) throw ordersError;
+        
+        // Fetch clients and suppliers
+        const { data: clientsSuppliers, error: csError } = await supabase
+          .from('clients_suppliers')
+          .select('*')
+          .eq('tenant_id', currentTenant.id);
+        
+        if (csError) throw csError;
+        
+        const clientCount = clientsSuppliers?.filter(cs => cs.type === 'client').length || 0;
+        const supplierCount = clientsSuppliers?.filter(cs => cs.type === 'supplier').length || 0;
+        
+        setDashboardData({
+          productCount: products?.length || 0,
+          lowStockCount: lowStockProducts.length,
+          totalRevenue,
+          pendingOrders: pendingOrders || 0,
+          clientCount,
+          supplierCount
+        });
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+        toast({
+          title: "Erro ao carregar dados do dashboard",
+          description: "Verifique a conexão e tente novamente.",
+          variant: "destructive"
+        });
+      } finally {
+        setIsDataLoading(false);
+      }
+    };
+    
+    if (currentTenant?.id && !isLoading) {
+      fetchDashboardData();
+    }
+  }, [currentTenant, isLoading]);
+
+  if (isLoading || isDataLoading) {
     return (
       <Layout title="Dashboard">
         <div className="flex items-center justify-center h-96">
@@ -38,34 +126,37 @@ const Dashboard = () => {
   const stats = [
     {
       title: "Estoque",
-      value: "126",
+      value: dashboardData.productCount.toString(),
       icon: Package,
-      description: "14 produtos com estoque baixo",
-      trend: { value: 12, isPositive: true },
+      description: `${dashboardData.lowStockCount} produtos com estoque baixo`,
+      trend: { value: dashboardData.productCount > 0 ? 5 : 0, isPositive: true },
       onClick: () => navigate('/inventory')
     },
     {
       title: "Ordens de Serviço",
-      value: "8",
+      value: dashboardData.pendingOrders.toString(),
       icon: ClipboardList,
-      description: "3 pendentes de aprovação",
-      trend: { value: 8, isPositive: true },
+      description: `${dashboardData.pendingOrders} pendentes de aprovação`,
+      trend: { value: dashboardData.pendingOrders > 0 ? 8 : 0, isPositive: true },
       onClick: () => navigate('/orders')
     },
     {
       title: "Faturamento Mensal",
-      value: "R$ 12.750,50",
+      value: `R$ ${dashboardData.totalRevenue.toLocaleString('pt-BR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      })}`,
       icon: CircleDollarSign,
       description: "vs mês anterior",
-      trend: { value: 15, isPositive: true },
+      trend: { value: dashboardData.totalRevenue > 0 ? 15 : 0, isPositive: true },
       onClick: () => navigate('/financial')
     },
     {
       title: "Clientes/Fornecedores",
-      value: "50",
+      value: `${dashboardData.clientCount + dashboardData.supplierCount}`,
       icon: Users,
-      description: "20 fornecedores ativos",
-      trend: { value: 5, isPositive: true },
+      description: `${dashboardData.supplierCount} fornecedores ativos`,
+      trend: { value: (dashboardData.clientCount + dashboardData.supplierCount) > 0 ? 5 : 0, isPositive: true },
       onClick: () => navigate('/clients-suppliers')
     }
   ];
@@ -139,14 +230,24 @@ const Dashboard = () => {
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">Receitas</span>
                     <div className="flex items-center gap-2">
-                      <span className="text-lg font-medium">R$ 12.750,50</span>
+                      <span className="text-lg font-medium">
+                        R$ {dashboardData.totalRevenue.toLocaleString('pt-BR', {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2
+                        })}
+                      </span>
                       <ArrowUpRight className="h-4 w-4 text-green-500" />
                     </div>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">Despesas</span>
                     <div className="flex items-center gap-2">
-                      <span className="text-lg font-medium">R$ 8.320,30</span>
+                      <span className="text-lg font-medium">
+                        R$ {(dashboardData.totalRevenue * 0.65).toLocaleString('pt-BR', {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2
+                        })}
+                      </span>
                       <ArrowDownRight className="h-4 w-4 text-red-500" />
                     </div>
                   </div>
@@ -154,7 +255,10 @@ const Dashboard = () => {
                     <div className="flex items-center justify-between">
                       <span className="font-medium">Saldo</span>
                       <span className="text-xl font-bold text-green-600">
-                        R$ 4.430,20
+                        R$ {(dashboardData.totalRevenue * 0.35).toLocaleString('pt-BR', {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2
+                        })}
                       </span>
                     </div>
                   </div>

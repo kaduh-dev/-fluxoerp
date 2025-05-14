@@ -1,80 +1,73 @@
-
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Edit, Trash2, AlertCircle } from "lucide-react";
+import { formatCurrency } from "@/lib/utils";
 import { Product } from "../types";
 
 interface ProductsTableProps {
   products: Product[];
+  onEdit: (id: string) => void;
+  onRemove: (id: string) => void;
 }
 
-export const ProductsTable = ({ products }: ProductsTableProps) => {
+export const ProductsTable = ({ products, onEdit, onRemove }: ProductsTableProps) => {
+  const getStockStatus = (product: Product) => {
+    // Define low stock as 5 or fewer items for this example
+    const isLowStock = product.stock <= 5;
+    return isLowStock ? 'low' : 'normal';
+  };
+
   return (
     <div className="rounded-md border">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[100px]">SKU</TableHead>
+            <TableHead>Código</TableHead>
             <TableHead>Nome</TableHead>
             <TableHead>Categoria</TableHead>
-            <TableHead className="text-center">Quantidade</TableHead>
-            <TableHead className="text-center">Mín. Estoque</TableHead>
-            <TableHead className="text-center">Local</TableHead>
             <TableHead className="text-right">Preço</TableHead>
-            <TableHead className="text-center">Status</TableHead>
+            <TableHead className="text-right">Estoque</TableHead>
+            <TableHead className="text-right">Status</TableHead>
+            <TableHead className="text-right">Ações</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {products.length > 0 ? (
+          {products.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={7} className="text-center py-6 text-muted-foreground">
+                Nenhum produto encontrado
+              </TableCell>
+            </TableRow>
+          ) : (
             products.map((product) => (
-              <TableRow key={product.id} className="cursor-pointer hover:bg-muted/60">
-                <TableCell className="font-medium">{product.sku}</TableCell>
+              <TableRow key={product.id}>
+                <TableCell className="font-medium">{product.code}</TableCell>
                 <TableCell>{product.name}</TableCell>
                 <TableCell>{product.category}</TableCell>
-                <TableCell className="text-center">{product.quantity}</TableCell>
-                <TableCell className="text-center">{product.minStock}</TableCell>
-                <TableCell className="text-center">{product.location}</TableCell>
                 <TableCell className="text-right">
-                  R$ {product.price.toFixed(2).replace(".", ",")}
+                  {formatCurrency(product.sale_price || 0)}
                 </TableCell>
-                <TableCell className="text-center">
-                  <Badge
-                    variant={
-                      product.status === "out" 
-                        ? "destructive" 
-                        : product.status === "low" 
-                          ? "outline" 
-                          : "secondary"
-                    }
-                    className={
-                      product.status === "low"
-                        ? "bg-amber-100 text-amber-600 hover:bg-amber-200 hover:text-amber-700"
-                        : product.status === "normal"
-                        ? "bg-green-100 text-green-600 hover:bg-green-200 hover:text-green-700" 
-                        : ""
-                    }
-                  >
-                    {product.status === "normal"
-                      ? "Normal"
-                      : product.status === "low"
-                      ? "Baixo"
-                      : "Esgotado"}
+                <TableCell className="text-right">
+                  {product.stock} {product.unit}
+                </TableCell>
+                <TableCell className="text-right">
+                  <Badge variant={getStockStatus(product) === 'low' ? 'destructive' : 'default'}>
+                    {getStockStatus(product) === 'low' ? 'Baixo' : 'Normal'}
                   </Badge>
+                </TableCell>
+                <TableCell className="text-right">
+                  <div className="flex justify-end gap-2">
+                    <Button variant="ghost" size="icon" onClick={() => onEdit(product.id)}>
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => onRemove(product.id)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                Nenhum produto encontrado com os filtros selecionados.
-              </TableCell>
-            </TableRow>
           )}
         </TableBody>
       </Table>

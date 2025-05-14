@@ -81,44 +81,135 @@ export const useProducts = () => {
       return;
     }
 
-    const { data, error } = await supabase
-      .from('products')
-      .insert([{
+    try {
+      // Generate a random ID (simulate UUID)
+      const productId = `prod_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+      
+      // Generate a timestamp for created_at
+      const createdAt = new Date().toISOString();
+      
+      // Create the complete product object
+      const completeProduct = {
         ...newProduct,
+        id: productId,
         tenant_id: currentTenant.id,
-        status: newProduct.quantity <= newProduct.minStock ? 'low' : 'normal'
-      }])
-      .select()
-      .single();
+        status: (newProduct.quantity && newProduct.minStock && newProduct.quantity <= newProduct.minStock) ? 'low' : 'normal',
+        created_at: createdAt
+      };
 
-    if (error) {
-      console.error('Error adding product:', error);
-      toast.error("Erro ao adicionar produto");
-      return;
+      const { data, error } = await supabase
+        .from('products')
+        .insert([completeProduct])
+        .select()
+        .single();
+
+      if (error) {
+        if (error.code === '23505') { // Unique constraint violation
+          toast.error("Produto com este código já existe");
+        } else {
+          console.error('Error adding product:', error);
+          toast.error("Erro ao adicionar produto");
+        }
+        return;
+      }
+
+      // If we get data back, use it, otherwise use our complete product object
+      const productToAdd = data || completeProduct;
+      
+      setFilteredProducts(prev => [...prev, productToAdd]);
+      
+      // Log activity
+      const activity = createActivityLog(`Produto ${productToAdd.name} adicionado ao estoque`);
+      console.log("Activity logged:", activity);
+      
+      // Optionally, save activity to database
+      try {
+        await supabase.from('activities').insert([{
+          tenant_id: currentTenant.id,
+          type: 'inventory',
+          description: `Produto ${productToAdd.name} adicionado ao estoque`,
+          user_id: 'current_user_id', // Replace with actual user ID
+          created_at: new Date().toISOString()
+        }]);
+      } catch (activityError) {
+        console.error('Error logging activity:', activityError);
+      }
+      
+      toast.success("Produto adicionado com sucesso");
+      
+      // Force a refresh of products
+      fetchProducts();
+      
+      return productToAdd;
+    } catch (err) {
+      console.error('Unexpected error adding product:', err);
+      toast.error("Erro inesperado ao adicionar produto");
+      return null;
     }
-
-    setFilteredProducts(prev => [...prev, data]);
-    const activity = createActivityLog(`Produto ${data.name} adicionado ao estoque`);
-    console.log("Activity logged:", activity);
-    toast.success("Produto adicionado com sucesso");
   };
 
   const handleRemoveProduct = async (id: string) => {
-    const { error } = await supabase
-      .from('products')
-      .delete()
-      .eq('id', id);
+    try {
+      // Find the product to be removed for activity logging
+      const productToRemove = filteredProducts.find(p => p.id === id);
+      
+      if (!productToRemove) {
+        toast.error("Produto não encontrado");
+        return false;
+      }
+      
+      // Check if there are any dependencies (stock movements, sales, etc.)
+      const { count, error: countError } = await supabase
+        .from('stock_movements')
+        .select('*', { count: 'exact', head: true })
+        .eq('product_id', id);
+        
+      if (countError) {
+        console.error('Error checking dependencies:', countError);
+      } else if (count && count > 0) {
+        toast.error("Este produto possui movimentações de estoque e não pode ser removido");
+        return false;
+      }
+      
+      // Proceed with deletion
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', id);
 
-    if (error) {
-      console.error('Error removing product:', error);
-      toast.error("Erro ao remover produto");
-      return;
+      if (error) {
+        console.error('Error removing product:', error);
+        toast.error("Erro ao remover produto");
+        return false;
+      }
+
+      // Update the local state
+      setFilteredProducts(prev => prev.filter(p => p.id !== id));
+      
+      // Log activity
+      const activity = createActivityLog(`Produto ${productToRemove.name} removido do estoque`);
+      console.log("Activity logged:", activity);
+      
+      // Optionally, save activity to database
+      try {
+        await supabase.from('activities').insert([{
+          tenant_id: currentTenant?.id,
+          type: 'inventory',
+          description: `Produto ${productToRemove.name} removido do estoque`,
+          user_id: 'current_user_id', // Replace with actual user ID
+          created_at: new Date().toISOString()
+        }]);
+      } catch (activityError) {
+        console.error('Error logging activity:', activityError);
+      }
+      
+      toast.success("Produto removido com sucesso");
+      return true;
+    } catch (err) {
+      console.error('Unexpected error removing product:', err);
+      toast.error("Erro inesperado ao remover produto");
+      return false;
     }
-
-    setFilteredProducts(prev => prev.filter(p => p.id !== id));
-    const activity = createActivityLog(`Produto removido do estoque`);
-    console.log("Activity logged:", activity);
-    toast.success("Produto removido com sucesso");
   };
 
   const categories = [...new Set(filteredProducts.map((p) => p.category))];
