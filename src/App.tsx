@@ -19,6 +19,7 @@ import PurchaseRequests from "./pages/purchases/PurchaseRequests";
 import Invoices from "./pages/invoices/Invoices";
 import Expenses from "./pages/expenses/Expenses";
 import NotFound from "./pages/NotFound";
+import Unauthorized from "./pages/Unauthorized";
 import StockMovements from "./pages/inventory/StockMovements";
 import FinancialEntries from "./pages/financial/FinancialEntries";
 import CashFlow from "./pages/financial/CashFlow";
