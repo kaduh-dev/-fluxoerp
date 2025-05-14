@@ -67,7 +67,7 @@ export function Sidebar() {
         <div className="flex h-16 items-center px-4 border-b border-sidebar-accent/20">
           <Link to="/dashboard" className="flex items-center gap-2">
             <Box className="h-6 w-6 text-sidebar-primary" />
-            <span className="text-xl font-bold">SaaS ERP</span>
+            <span className="text-xl font-bold">Fluxos</span>
           </Link>
         </div>
 

@@ -95,12 +95,12 @@ const Dashboard = () => {
   ];
 
   return (
-    <Layout title="Dashboard">
+    <Layout title="Painel de Controle">
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
             <h2 className="text-3xl font-bold tracking-tight">
-              Bem-vindo ao FluxoERP
+              Bem-vindo ao Fluxos
             </h2>
             <p className="text-muted-foreground mt-2">
               {currentTenant?.name} - Visão geral do seu negócio
@@ -110,68 +110,70 @@ const Dashboard = () => {
             <Button variant="outline" onClick={() => navigate('/reports')}>
               Relatórios
             </Button>
-            <Button onClick={() => navigate('/financial')}>
-              Financeiro
-            </Button>
           </div>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {stats.map((stat, index) => (
             <StatCard
               key={index}
               {...stat}
-              className="cursor-pointer hover:border-primary/50 transition-colors"
+              className="cursor-pointer hover:shadow-md hover:border-primary/50 transition-all"
               onClick={stat.onClick}
             />
           ))}
         </div>
-
-        <div className="grid gap-4 md:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg font-medium">
-                Resumo Financeiro
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Receitas</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg font-medium">R$ 12.750,50</span>
-                    <ArrowUpRight className="h-4 w-4 text-green-500" />
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Despesas</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg font-medium">R$ 8.320,30</span>
-                    <ArrowDownRight className="h-4 w-4 text-red-500" />
-                  </div>
-                </div>
-                <div className="pt-4 border-t">
+        
+        <div className="mt-8">
+          <h3 className="text-xl font-semibold mb-4">Resumo do Negócio</h3>
+          <div className="grid gap-6 md:grid-cols-2">
+            <Card className="hover:shadow-md transition-all">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg font-medium flex items-center gap-2">
+                  <CircleDollarSign className="h-5 w-5 text-primary" />
+                  Resumo Financeiro
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="font-medium">Saldo</span>
-                    <span className="text-xl font-bold text-green-600">
-                      R$ 4.430,20
-                    </span>
+                    <span className="text-sm text-muted-foreground">Receitas</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg font-medium">R$ 12.750,50</span>
+                      <ArrowUpRight className="h-4 w-4 text-green-500" />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Despesas</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg font-medium">R$ 8.320,30</span>
+                      <ArrowDownRight className="h-4 w-4 text-red-500" />
+                    </div>
+                  </div>
+                  <div className="pt-4 border-t">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">Saldo</span>
+                      <span className="text-xl font-bold text-green-600">
+                        R$ 4.430,20
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg font-medium">
-                Atividades Recentes
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <RecentActivity activities={activities} />
-            </CardContent>
-          </Card>
+            <Card className="hover:shadow-md transition-all">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg font-medium flex items-center gap-2">
+                  <ClipboardList className="h-5 w-5 text-primary" />
+                  Atividades Recentes
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <RecentActivity activities={activities} />
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </Layout>

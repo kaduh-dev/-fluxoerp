@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Bell, Moon, Search, Sun, User } from 'lucide-react';
 import Settings from '@/pages/settings/Settings';
@@ -16,7 +15,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 export const Header = ({ title }: { title: string }) => {
   const [searchQuery, setSearchQuery] = useState('');
-  
+
   return (
     <header className="w-full px-6 py-4 border-b flex items-center justify-between bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div>
@@ -45,7 +44,7 @@ export const Header = ({ title }: { title: string }) => {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="relative">
@@ -73,7 +72,7 @@ export const Header = ({ title }: { title: string }) => {
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
-        
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="rounded-full">
