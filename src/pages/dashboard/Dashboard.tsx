@@ -89,6 +89,22 @@ const Dashboard = () => {
           end_date: endOfMonth.toISOString()
         });
 
+        // Verifica a estrutura da tabela antes de fazer a consulta
+        const { data: tableInfo, error: tableError } = await supabase
+          .from('financial_entries')
+          .select('*')
+          .limit(1);
+        
+        if (tableError) {
+          console.error('Error checking financial table:', tableError);
+          throw new Error(`Erro ao verificar estrutura da tabela: ${tableError.message}`);
+        }
+        
+        // Registra as colunas disponíveis para diagnóstico
+        if (tableInfo && tableInfo.length > 0) {
+          console.log('Available columns in financial_entries:', Object.keys(tableInfo[0]));
+        }
+        
         const financialQuery = supabase
           .from('financial_entries')
           .select('value, type')
@@ -100,21 +116,22 @@ const Dashboard = () => {
         
         if (financialError) {
           console.error('Financial data query error details:', financialError);
-          throw financialError;
+          // Use uma mensagem de erro mais descritiva
+          throw new Error(`Erro ao buscar dados financeiros: ${financialError.message || 'Erro desconhecido'}`);
         }
         
         console.log('Financial data retrieved:', financialData?.length || 0, 'entries');
 
         let totalRevenue = 0;
 
-        if (financialData) {
+        if (financialData && financialData.length > 0) {
           const income = financialData
             .filter(item => item.type === 'income')
-            .reduce((sum, item) => sum + (item.value || 0), 0);
+            .reduce((sum, item) => sum + (parseFloat(item.value) || 0), 0);
 
           const expenses = financialData
             .filter(item => item.type === 'expense')
-            .reduce((sum, item) => sum + (item.value || 0), 0);
+            .reduce((sum, item) => sum + (parseFloat(item.value) || 0), 0);
 
           totalRevenue = income;
         }
@@ -160,7 +177,14 @@ const Dashboard = () => {
         } else if (typeof error === 'object' && error !== null) {
           // Para erros do Supabase ou outros objetos de erro
           const errorObj = error as any;
-          errorDescription = errorObj.message || errorObj.details || errorObj.error || JSON.stringify(error);
+          
+          // Se o objeto de erro tiver uma mensagem vazia, forneça informações mais úteis
+          if (errorObj.message === '') {
+            errorDescription = "Erro ao conectar com o banco de dados. Verifique sua conexão e a estrutura das tabelas.";
+          } else {
+            errorDescription = errorObj.message || errorObj.details || errorObj.error || JSON.stringify(error);
+          }
+          
           console.error('Error details:', errorObj);
         }
         

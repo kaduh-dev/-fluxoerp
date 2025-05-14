@@ -24,3 +24,14 @@ export type CashFlow = {
   expenses: number;
   balance: number;
 };
+export interface FinancialEntry {
+  id: string;
+  tenant_id: string;
+  created_at: string;
+  value: number;
+  type: 'income' | 'expense';
+  description: string;
+  category?: string;
+  paymentMethod?: string;
+  date?: string;
+}
